@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <script>
+    const hrOnlyPages = [
+        "dashboard.html", "employee.html", "employee_add.html", 
+        "employee_edit.html", "employee_view.html", "payroll.html", "reports.html",
+        "leaverequest.html"
+    ];
+
+    const currentPage = window.location.pathname.split("/").pop();
+    const loggedInUserString = localStorage.getItem('loggedInUser');
+
+    if (!loggedInUserString) {
+        window.location.href = "index.html";
+    } else {
+        const loggedInUser = JSON.parse(loggedInUserString);
+        const userRole = loggedInUser.role;
+
+        if (userRole === "Employee" && hrOnlyPages.includes(currentPage)) {
+            window.location.href = "attendance.html";
+        }
+    }
+  </script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Employee</title>
+      <link rel="icon" type="image/png" href="/images/rmt2.png">
+  <link rel="stylesheet" href="../css/employee.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-box">
+          <img src="../images/rmt2.png" alt="RMT Logo" class="sidebar-logo">
+          <div class="company-info">
+            <h2 class="logo">RMT MARKETING</h2>
+            <p class="company-subtitle">Human Resource Management</p>
+          </div>
+        </div>
+        <div class="company-details">
+          <p class="detail-item">SmartStock Medical Supply Trading</p>
+          <p class="detail-item">1234 MedTech Avenue, Quezon City, Philippines</p>
+          <p class="detail-item">📞 (02) 8888-1234 | ✉️ smartstock.ph@gmail.com</p>
+          <p class="detail-item">VAT Reg. TIN: 123-456-789-000</p>
+          <p class="detail-item">NON-VAT Registered</p>
+        </div>
+      </div>
+
+      <p id="welcomeText" style="font-weight:500; color:#16a34a;"></p>
+
+      <nav class="nav" id="sidebarNav">
+        <a href="dashboard.html" class="nav-item" id="navDashboard">🏠 Dashboard</a>
+        <a href="employee.html" class="nav-item active" id="navEmployees">👥 Employees</a>
+        <a href="attendance.html" class="nav-item" id="navAttendance">🕒 Attendance</a>
+        <a href="leave.html" class="nav-item" id="navLeave">📄 Leave Management</a>
+        <a href="leaverequest.html" class="nav-item" id="navLeaveRequest">📄 Leave Request</a>
+        <a href="payroll.html" class="nav-item" id="navPayroll">💲 Payroll</a>
+        <a href="reports.html" class="nav-item" id="navReports">📊 Reports</a>
+      </nav>
+
+      <div class="user-menu-sidebar">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="User Icon" class="user-icon" id="userIcon">
+        <div class="dropdown-menu" id="dropdownMenu">
+          <p id="userEmailDisplay"></p>
+          <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <header>
+        <h2>Edit Employee</h2>
+        <button class="back-btn" onclick="window.location.href='employee.html'">← Back to List</button>
+      </header>
+
+      <div class="form-container">
+        <form id="employeeForm" data-mode="edit">
+          
+          <!-- Documents & Photo Section -->
+          <div class="form-section">
+            <div class="form-section-title">📄 Documents & Photo</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Employee Photo</label>
+                <div class="file-upload-container">
+                  <input type="file" id="empPhoto" accept="image/*">
+                  <div class="file-upload-hint">📸 Upload new photo to replace existing</div>
+                </div>
+                <div id="photoPreview" style="margin-top:8px;"></div>
+              </div>
+
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Resume / CV / Certificates</label>
+                <div class="file-upload-container">
+                  <input type="file" id="empFiles" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                  <div class="file-upload-hint">📎 Upload additional documents</div>
+                </div>
+                <div id="filesList" style="margin-top:8px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Personal Information Section -->
+          <div class="form-section">
+            <div class="form-section-title">👤 Personal Information</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Employee ID <span class="required">*</span></label>
+                <input type="text" id="empId" required>
+              </div>
+              <div class="form-group">
+                <label>Email Address <span class="required">*</span></label>
+                <input type="email" id="empEmail" required>
+              </div>
+              <div class="form-group">
+                <label>Phone Number <span class="required">*</span></label>
+                <input type="text" id="phone" required>
+              </div>
+              
+              <div class="form-group">
+                <label>First Name <span class="required">*</span></label>
+                <input type="text" id="firstName" required>
+              </div>
+              <div class="form-group">
+                <label>Middle Name</label>
+                <input type="text" id="middleName">
+              </div>
+              <div class="form-group">
+                <label>Last Name <span class="required">*</span></label>
+                <input type="text" id="lastName" required>
+              </div>
+
+              <div class="form-group">
+                <label>Date of Birth <span class="required">*</span></label>
+                <input type="date" id="dob" required>
+              </div>
+              <div class="form-group">
+                <label>Gender <span class="required">*</span></label>
+                <select id="gender" required>
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group"></div>
+
+              <div class="form-group form-group-full">
+                <label>Complete Address <span class="required">*</span></label>
+                <input type="text" id="address" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employment Details Section -->
+          <div class="form-section">
+            <div class="form-section-title">💼 Employment Details</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Position <span class="required">*</span></label>
+                <select id="Position" required>
+                  <option value="">Select Position</option>
+                  <option value="Employee">Employee</option>
+                  <option value="Manager">Manager</option>
+                  <option value="HR Manager">HR Manager</option>
+                  <option value="Driver">Driver</option>
+                  <option value="Dispatcher">Dispatcher</option>
+                  <option value="Porter">Porter</option>
+                  <option value="Sales Representative">Sales Representative</option>
+                  <option value="HR">HR</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Department <span class="required">*</span></label>
+                <input type="text" id="department" placeholder="Department Name" required>
+              </div>
+              
+              <div class="form-group">
+                <label>Date Hired <span class="required">*</span></label>
+                <input type="date" id="dateHired" required>
+              </div>
+
+              <div class="form-group">
+                <label>Employment Status <span class="required">*</span></label>
+                <select id="status" required>
+                  <option value="">Select Status</option>
+                  <option value="Intern">Intern</option>
+                  <option value="Probationary">Probationary</option>
+                  <option value="Regular">Regular</option>
+                  <option value="Resigned">Resigned</option>
+                  <option value="Terminated">Terminated</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Monthly Salary (₱) <span class="required">*</span></label>
+                <input type="number" id="salary" step="0.01" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="cancelEdit" class="cancel-btn">Cancel</button>
+            <button type="submit" id="saveEdit" class="save-btn">💾 Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const userEmail = localStorage.getItem('userEmail');
+    document.getElementById('welcomeText').textContent = "Welcome, " + userEmail;
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sidebar = document.querySelector(".sidebar");
+      
+      if (!document.querySelector(".hamburger-btn")) {
+        const hamburger = document.createElement("button");
+        hamburger.className = "hamburger-btn";
+        hamburger.innerHTML = '<span></span><span></span><span></span>';
+        sidebar.appendChild(hamburger);
+      }
+
+      const hamburger = document.querySelector(".hamburger-btn");
+      let isExpanded = false;
+      let hoverTimeout;
+
+      hamburger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        isExpanded = !isExpanded;
+        sidebar.classList.toggle("expanded", isExpanded);
+      });
+
+      sidebar.addEventListener("mouseenter", () => {
+        clearTimeout(hoverTimeout);
+        sidebar.classList.add("expanded");
+      });
+
+      sidebar.addEventListener("mouseleave", () => {
+        if (!isExpanded) {
+          hoverTimeout = setTimeout(() => {
+            sidebar.classList.remove("expanded");
+          }, 300);
+        }
+      });
+
+      const navItems = document.querySelectorAll(".nav-item");
+      navItems.forEach(item => {
+        const text = item.textContent.trim();
+        const icon = text.split(" ")[0];
+        const label = text.substring(icon.length).trim();
+        item.innerHTML = `<span class="nav-item-icon">${icon}</span><span class="nav-item-text">${label}</span>`;
+      });
+
+      const currentPage = window.location.pathname.split("/").pop();
+      navItems.forEach(item => {
+        if (item.getAttribute("href") === currentPage) {
+          item.classList.add("active");
+        }
+      });
+
+      const userIcon = document.getElementById("userIcon");
+      const dropdownMenu = document.getElementById("dropdownMenu");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      userIcon?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle("show");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".user-menu-sidebar")) {
+          dropdownMenu.classList.remove("show");
+        }
+      });
+
+      logoutBtn?.addEventListener("click", () => {
+        localStorage.removeItem("loggedInUser");
+        localStorage.removeItem("userEmail");
+        window.location.href = "index.html";
+      });
+
+      const userEmailDisplay = document.getElementById("userEmailDisplay");
+      if (userEmailDisplay && userEmail) {
+        userEmailDisplay.textContent = userEmail;
+      }
+    });
+  </script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/employee.js" defer></script>
+</body>
+</html>
