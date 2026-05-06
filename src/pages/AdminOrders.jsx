@@ -119,8 +119,9 @@ function OrderSheetModal({ order, isOpen, onClose }) {
                       || '#2B8FD6';
 
   // ── Team name ──
-  const teamName = order.customizationDetails?.customText
-                || order.teamName
+  const teamName = order.teamName
+                || order.design
+                || order.customizationDetails?.customText
                 || order.customerName
                 || 'Team Name';
 
