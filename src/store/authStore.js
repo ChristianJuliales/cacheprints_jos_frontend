@@ -17,7 +17,7 @@ export const useAuthStore = create((set, get) => ({
         set({ 
           user: JSON.parse(savedUser), 
           isAuthenticated: true, 
-          userRole: JSON.parse(savedUser).role,
+          userRole: JSON.parse(savedUser).role?.toLowerCase(),
           isLoading: false 
         });
       } catch (e) {
@@ -42,7 +42,7 @@ export const useAuthStore = create((set, get) => ({
 
       set({
         user,
-        userRole:        user.role,
+        userRole:        user.role?.toLowerCase(),
         isAuthenticated: true,
         isLoading:       false,
       });
@@ -65,7 +65,7 @@ export const useAuthStore = create((set, get) => ({
 
       set({
         user,
-        userRole:        user.role,
+        userRole:        user.role?.toLowerCase(),
         isAuthenticated: true,
         isLoading:       false,
       });

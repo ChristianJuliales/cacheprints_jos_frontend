@@ -118,7 +118,7 @@ export default function OrderChat({ orderId, orderStatus }) {
           </button>
         </div>
         <p className="text-xs text-gray-600">
-          {userRole === 'customer'
+          {userRole?.toLowerCase() === 'customer'
             ? 'Chat with admin about your order'
             : 'Contact customer about their order'}
         </p>

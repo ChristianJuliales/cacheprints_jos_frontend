@@ -81,15 +81,15 @@ export default function Navbar() {
         {/* ── Desktop Nav ── */}
         <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
           <Link to="/store" className={navLinkClass('/store')}>Store</Link>
-
-          {user && userRole === 'customer' && (
+          
+          {(userRole?.toLowerCase() === 'customer') && (
             <>
               <Link to="/customize" className={navLinkClass('/customize')}>Customize</Link>
               <Link to="/orders"    className={navLinkClass('/orders')}>Orders</Link>
             </>
           )}
 
-          {user && userRole === 'admin' && (
+          {(userRole?.toLowerCase() === 'admin') && (
             <>
               <Link to="/admin/dashboard" className={navLinkClass('/admin/dashboard')}>Dashboard</Link>
               <Link to="/admin/products"  className={navLinkClass('/admin/products')}>Products</Link>
@@ -104,7 +104,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2 flex-shrink-0">
           {user ? (
             <>
-              {userRole === 'customer' && (
+              {userRole?.toLowerCase() === 'customer' && (
                 <Link
                   to="/orders"
                   className="relative flex items-center gap-1.5 text-[0.8rem] font-medium text-gray-500 hover:text-[#111] hover:bg-black/[0.04] transition-all px-3 py-2 rounded-md"
@@ -157,14 +157,14 @@ export default function Navbar() {
         <div className="md:hidden bg-[#faf9f7] border-t border-black/[0.08] px-6 py-4 space-y-1">
           <Link to="/store" className="block text-sm font-semibold text-[#111] px-3 py-2 rounded-md hover:bg-black/[0.05]" onClick={() => setMobileMenuOpen(false)}>Store</Link>
 
-          {user && userRole === 'customer' && (
+          {(userRole?.toLowerCase() === 'customer') && (
             <>
               <Link to="/customize" className="block text-sm text-gray-600 px-3 py-2 rounded-md hover:bg-black/[0.05]" onClick={() => setMobileMenuOpen(false)}>Customize</Link>
               <Link to="/orders"    className="block text-sm text-gray-600 px-3 py-2 rounded-md hover:bg-black/[0.05]" onClick={() => setMobileMenuOpen(false)}>Orders</Link>
             </>
           )}
 
-          {user && userRole === 'admin' && (
+          {(userRole?.toLowerCase() === 'admin') && (
             <>
               <Link to="/admin/dashboard" className="block text-sm text-gray-600 px-3 py-2 rounded-md hover:bg-black/[0.05]" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
               <Link to="/admin/products"  className="block text-sm text-gray-600 px-3 py-2 rounded-md hover:bg-black/[0.05]" onClick={() => setMobileMenuOpen(false)}>Products</Link>

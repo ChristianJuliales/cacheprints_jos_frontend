@@ -96,7 +96,7 @@ export default function StorePage() {
   const [loading, setLoading] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-  const isAdmin = userRole === 'admin';
+  const isAdmin = userRole?.toLowerCase() === 'admin';
 
   useEffect(() => { fetchProducts(); }, []);
 

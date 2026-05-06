@@ -39,7 +39,7 @@ function GuestRoute({ children }) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to={userRole === 'admin' ? '/admin/dashboard' : '/'} replace />;
+    return <Navigate to={userRole?.toLowerCase() === 'admin' ? '/admin/dashboard' : '/'} replace />;
   }
 
   return children;
