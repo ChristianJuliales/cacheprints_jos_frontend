@@ -726,7 +726,7 @@ export default function OrderDetailsModal({
               </div>
             )}
 
-            {order.status === 'pending-payment' && (
+            {(order.status === 'pending-payment' || order.status === 'Designing') && (
               <div>
                 {order.paymentReceipt && order.status === 'pending-payment' && (
                   <div className="p-2 bg-blue-50 rounded text-xs text-blue-800 mb-2 text-center">
@@ -744,7 +744,7 @@ export default function OrderDetailsModal({
               </div>
             )}
 
-            {order.status === 'paid' && !showDesignUpload && (
+            {order.status === 'Designing' && !showDesignUpload && (
               <button
                 onClick={() => setShowDesignUpload(true)}
                 disabled={updatingStatus}
@@ -796,7 +796,7 @@ export default function OrderDetailsModal({
               </div>
             )}
 
-            {(order.status === 'in-production' || order.status === 'for-shipping') && (
+            {['Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup'].includes(order.status) && (
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-4">
                 <div className="flex justify-between items-start">
                   <div>
@@ -853,13 +853,26 @@ export default function OrderDetailsModal({
               </div>
             )}
 
-            {(order.status === 'in-production' || order.status === 'for-shipping') && (
+            {['Printing', 'Heat Press', 'Sewing', 'Quality Check'].includes(order.status) && (
+              <button
+                onClick={() => onUpdateStatus(order.id, 'next')}
+                disabled={updatingStatus}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2"
+              >
+                <span>Advance to {NEXT_STATUS[order.status]}</span>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+            )}
+
+            {order.status === 'Ready for Pickup' && (
               <button
                 onClick={() => onComplete(order.id)}
                 disabled={updatingStatus || !order.finalPaymentReceipt}
-                className={`w-full py-2 rounded font-medium transition ${
+                className={`w-full py-2.5 rounded-xl font-bold transition ${
                   order.finalPaymentReceipt 
-                    ? 'bg-green-500 hover:bg-green-600 text-white' 
+                    ? 'bg-green-600 hover:bg-green-700 text-white' 
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 }`}
               >

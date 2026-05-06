@@ -8,11 +8,14 @@ import toast from 'react-hot-toast';
    STATUS PIPELINE
 ───────────────────────────────────────── */
 const STATUS_PIPELINE = [
-  { key: 'pending',          label: 'Pending',         short: 'Pending',    color: '#f59e0b', bg: '#fffbeb', text: '#92400e', icon: '⏳' },
+  { key: 'Order Received',   label: 'Order Received',  short: 'Received',   color: '#64748b', bg: '#f1f5f9', text: '#334155', icon: '📥' },
   { key: 'pending-payment',  label: 'Pending Payment', short: 'Payment',    color: '#f97316', bg: '#fff7ed', text: '#9a3412', icon: '💳' },
-  { key: 'paid',             label: 'Paid',            short: 'Paid',       color: '#3b82f6', bg: '#eff6ff', text: '#1e40af', icon: '✅' },
-  { key: 'in-production',    label: 'In Production',   short: 'Production', color: '#8b5cf6', bg: '#f5f3ff', text: '#5b21b6', icon: '⚙️' },
-  { key: 'for-shipping',     label: 'For Shipping',    short: 'Shipping',   color: '#06b6d4', bg: '#ecfeff', text: '#155e75', icon: '📦' },
+  { key: 'Designing',        label: 'Designing',       short: 'Designing',  color: '#3b82f6', bg: '#eff6ff', text: '#1e40af', icon: '🎨' },
+  { key: 'Printing',         label: 'Printing',        short: 'Printing',   color: '#8b5cf6', bg: '#f5f3ff', text: '#5b21b6', icon: '🖨️' },
+  { key: 'Heat Press',       label: 'Heat Press',      short: 'Heat Press', color: '#ec4899', bg: '#fdf2f8', text: '#9d174d', icon: '🔥' },
+  { key: 'Sewing',           label: 'Sewing',          short: 'Sewing',     color: '#10b981', bg: '#ecfdf5', text: '#065f46', icon: '🧵' },
+  { key: 'Quality Check',    label: 'Quality Check',   short: 'Quality',    color: '#f59e0b', bg: '#fffbeb', text: '#92400e', icon: '🔍' },
+  { key: 'Ready for Pickup', label: 'Ready for Pickup',short: 'Ready',      color: '#06b6d4', bg: '#ecfeff', text: '#155e75', icon: '📦' },
   { key: 'completed',        label: 'Completed',       short: 'Done',       color: '#10b981', bg: '#ecfdf5', text: '#065f46', icon: '🎉' },
 ];
 
@@ -23,12 +26,15 @@ const STATUS_MAP = Object.fromEntries(
 );
 
 const NEXT_STATUS = {
-  'pending':         'pending-payment',
   'Order Received':  'pending-payment',
-  'pending-payment': 'paid',
-  'paid':            'in-production',
-  'in-production':   null,
-  'for-shipping':    'completed',
+  'pending-payment': 'Designing',
+  'Designing':       'Printing',
+  'Printing':        'Heat Press',
+  'Heat Press':      'Sewing',
+  'Sewing':          'Quality Check',
+  'Quality Check':   'Ready for Pickup',
+  'Ready for Pickup':'completed',
+  'completed':       null,
 };
 
 /* ─────────────────────────────────────────
