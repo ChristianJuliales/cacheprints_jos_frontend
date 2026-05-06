@@ -23,6 +23,8 @@ const STATUS_CONFIG = {
   'rejected':         { label: 'Rejected',         pill: 'bg-red-50 text-red-800 border border-red-200',          step: -1 },
 };
 
+const DEFAULT_STATUS = STATUS_CONFIG['Order Received'];
+
 /* ── Track steps — dynamic based on orderType ── */
 const getTrackSteps = (orderType) => [
   { key: 'placed',     label: 'Order placed',      desc: 'Order received by store' },
@@ -233,7 +235,7 @@ export default function OrdersPage() {
             {/* ── Orders List ── */}
             <div className="space-y-4">
               {orders.map(order => {
-                const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG['Order Received'];
+                const cfg = STATUS_CONFIG[order.status] || DEFAULT_STATUS;
                 const step = getStep(order.status);
                 const isSelected = selectedOrder?.id === order.id;
 
