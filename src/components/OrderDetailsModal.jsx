@@ -49,6 +49,33 @@ export default function OrderDetailsModal({
   const [finalPaymentPreview, setFinalPaymentPreview] = useState(null);
   const [uploadingFinalPayment, setUploadingFinalPayment] = useState(false);
 
+  // ✅ Compress image to stay under Vercel's 4.5MB limit
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          // High res for design, but still capped
+          const MAX_WIDTH = 1600; 
+          const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          // Compress as JPEG at 80% quality
+          const compressed = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(compressed);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
 
   const lineup = useMemo(() => order?.customizationDetails?.lineup || [], [order]);
   const oversizedSizes = ['XXL', '3XL', '4XL', '5XL'];
@@ -245,13 +272,8 @@ export default function OrderDetailsModal({
 
     setStartingProduction(true);
     try {
-      // 1. Read file as Base64
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(finalDesignFile);
-      });
+      // 1. Compress file
+      const base64 = await compressImage(finalDesignFile);
 
       // 2. Send to Backend
       const response = await apiClient.put(`/jos/admin/orders/${order.id}/start-production`, {
@@ -296,12 +318,7 @@ export default function OrderDetailsModal({
 
     setUploadingFinalPayment(true);
     try {
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(finalPaymentFile);
-      });
+      const base64 = await compressImage(finalPaymentFile);
 
       await apiClient.put(`/jos/admin/orders/${order.id}/upload-final-payment`, {
         finalPaymentReceipt: base64
