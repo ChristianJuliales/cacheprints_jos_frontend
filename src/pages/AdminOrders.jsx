@@ -744,10 +744,9 @@ export default function AdminOrders() {
 
   const fetchAllOrders = async () => {
     try {
-      const response = await apiClient.get('/orders');
-      // Map _id to id for frontend compatibility
-      const mappedOrders = response.data.map(o => ({ ...o, id: o._id }));
-      setOrders(mappedOrders);
+      const response = await apiClient.get('/jos/admin/orders');
+      // The new JOS admin endpoint returns an array directly with correct aliases
+      setOrders(response.data);
       setLoading(false);
     } catch {
       toast.error('Failed to load orders');

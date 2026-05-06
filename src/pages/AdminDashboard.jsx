@@ -21,8 +21,8 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const [statsRes, ordersRes] = await Promise.all([
-        apiClient.get('/admin/stats'),
-        apiClient.get('/admin/orders?limit=5'),
+        apiClient.get('/jos/admin/stats'),
+        apiClient.get('/jos/admin/orders?limit=5'),
       ]);
       setStats(statsRes.data);
       setRecentOrders(ordersRes.data);
