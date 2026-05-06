@@ -115,7 +115,7 @@ export default function Navbar() {
                 </Link>
               )}
               <div className="w-px h-5 bg-gray-200 mx-1" />
-              <span className="hidden sm:block text-[0.72rem] text-gray-400 max-w-[150px] truncate">{user.email}</span>
+              <span className="hidden sm:block text-[0.72rem] text-gray-400 max-w-[150px] truncate">{user.name}</span>
               <button
                 onClick={handleLogout}
                 className="px-4 py-[0.42rem] text-[0.78rem] font-semibold text-[#111] border border-black/[0.16] rounded-lg hover:bg-[#111] hover:text-white transition-all duration-200"
