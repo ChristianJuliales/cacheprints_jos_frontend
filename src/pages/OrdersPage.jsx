@@ -174,7 +174,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchUserOrders();
-    const interval = setInterval(fetchUserOrders, 60000);
+    const interval = setInterval(fetchUserOrders, 30000);
     return () => clearInterval(interval);
   }, [user]);
 

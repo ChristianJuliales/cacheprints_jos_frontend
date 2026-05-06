@@ -737,7 +737,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     fetchAllOrders();
-    const interval = setInterval(fetchAllOrders, 60000);
+    const interval = setInterval(fetchAllOrders, 30000);
     return () => clearInterval(interval);
   }, []);
 
