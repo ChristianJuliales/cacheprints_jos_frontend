@@ -779,9 +779,9 @@ export default function AdminOrders() {
 
   const handleApprove         = (id) => handleStatusUpdate(id, 'pending-payment');
   const handleReject          = (id) => handleStatusUpdate(id, 'rejected');
-  const handleApprovePayment  = (id) => handleStatusUpdate(id, 'paid');
-  const handleStartProduction = (id) => handleStatusUpdate(id, 'in-production');
-  const handleMarkForShipping = (id) => handleStatusUpdate(id, 'for-shipping');
+  const handleApprovePayment  = (id) => handleStatusUpdate(id, 'Designing');
+  const handleStartProduction = (id) => handleStatusUpdate(id, 'Printing');
+  const handleMarkForShipping = (id) => handleStatusUpdate(id, 'Ready for Pickup');
   const handleComplete        = (id) => handleStatusUpdate(id, 'completed');
 
   const handleUploadFinalPayment = (orderId, finalPaymentReceipt) => {
@@ -802,7 +802,7 @@ export default function AdminOrders() {
   const completedOrders = (orders || []).filter(o => o && o.status === 'completed');
   const rejectedOrders  = (orders || []).filter(o => o && o.status === 'rejected');
 
-  const statuses = ['all', 'pending', 'pending-payment', 'paid', 'in-production', 'for-shipping', 'completed', 'rejected'];
+  const statuses = ['all', 'Order Received', 'pending-payment', 'Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'completed', 'rejected'];
 
   const filteredActive = activeOrders.filter(order => {
     const q = searchQuery.toLowerCase();
@@ -845,10 +845,10 @@ export default function AdminOrders() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          <StatCard label="Active"        count={activeOrders.length}                                    color="#111111" icon="📋" />
-          <StatCard label="In Production" count={orders.filter(o => o.status === 'in-production').length} color="#8b5cf6" icon="⚙️" />
-          <StatCard label="For Shipping"  count={orders.filter(o => o.status === 'for-shipping').length}  color="#06b6d4" icon="📦" />
-          <StatCard label="Completed"     count={completedOrders.length}                                 color="#10b981" icon="🎉" />
+          <StatCard label="Designing"     count={orders.filter(o => o.status === 'Designing').length}    color="#3b82f6" icon="🎨" />
+          <StatCard label="Printing"      count={orders.filter(o => o.status === 'Printing').length}     color="#8b5cf6" icon="🖨️" />
+          <StatCard label="Heat Press"    count={orders.filter(o => o.status === 'Heat Press').length}   color="#ec4899" icon="🔥" />
+          <StatCard label="Sewing"        count={orders.filter(o => o.status === 'Sewing').length}       color="#10b981" icon="🧵" />
         </div>
 
         <div className="flex gap-3 mb-5">
