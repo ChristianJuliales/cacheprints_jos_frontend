@@ -2,6 +2,20 @@ import React, { useState, useMemo } from 'react';
 import apiClient from '../utils/apiClient';
 import toast from 'react-hot-toast';
 
+const oversizedSizes = ['2XL', '3XL', '4XL', '5XL', '6XL'];
+
+const NEXT_STATUS = {
+  'Order Received':  'pending-payment',
+  'pending-payment': 'Designing',
+  'Designing':       'Printing',
+  'Printing':        'Heat Press',
+  'Heat Press':      'Sewing',
+  'Sewing':          'Quality Check',
+  'Quality Check':   'Ready for Pickup',
+  'Ready for Pickup':'completed',
+  'completed':       null,
+};
+
 export default function OrderDetailsModal({
   order,
   isOpen,
@@ -13,6 +27,7 @@ export default function OrderDetailsModal({
   onComplete,
   onUploadFinalPayment,
   onOpenChat,
+  onUpdateStatus,
   updatingStatus,
 }) {
 

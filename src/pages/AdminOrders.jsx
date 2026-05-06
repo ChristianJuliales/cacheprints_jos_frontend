@@ -762,13 +762,21 @@ export default function AdminOrders() {
   };
 
   const handleStatusUpdate = async (orderId, newStatus) => {
+    let finalStatus = newStatus;
+    if (newStatus === 'next') {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      finalStatus = NEXT_STATUS[order.status];
+      if (!finalStatus) return;
+    }
+
     setUpdatingStatus(true);
     try {
-      await apiClient.put(`/orders/${orderId}`, { status: newStatus });
-      toast.success(`Moved to "${STATUS_MAP[newStatus]?.label || newStatus}"`);
-      const updated = orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o);
+      await apiClient.put(`/jos/admin/orders/${orderId}/status`, { status: finalStatus });
+      toast.success(`Moved to "${STATUS_MAP[finalStatus]?.label || finalStatus}"`);
+      const updated = orders.map(o => o.id === orderId ? { ...o, status: finalStatus } : o);
       setOrders(updated);
-      if (selectedOrder?.id === orderId) setSelectedOrder({ ...selectedOrder, status: newStatus });
+      if (selectedOrder?.id === orderId) setSelectedOrder({ ...selectedOrder, status: finalStatus });
     } catch {
       toast.error('Failed to update order');
     } finally {
@@ -979,7 +987,7 @@ export default function AdminOrders() {
         onComplete={handleComplete}
         onUploadFinalPayment={handleUploadFinalPayment}
         onOpenChat={openChat}
-
+        onUpdateStatus={handleStatusUpdate}
         updatingStatus={updatingStatus}
       />
 
