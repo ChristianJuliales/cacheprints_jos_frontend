@@ -77,7 +77,7 @@ export default function PaymentModal({
         return;
       }
 
-      await apiClient.put(`/orders/${order.id}/payment-receipt`, {
+      await apiClient.put(`/jos/orders/${order.id}/payment-receipt`, {
         paymentReceipt: compressed,
         fileName: receiptFile.name,
       });
