@@ -24,6 +24,7 @@ const STATUS_MAP = Object.fromEntries(
 
 const NEXT_STATUS = {
   'pending':         'pending-payment',
+  'Order Received':  'pending-payment',
   'pending-payment': 'paid',
   'paid':            'in-production',
   'in-production':   null,
@@ -400,7 +401,7 @@ function OrderSheetModal({ order, isOpen, onClose }) {
                 </span>
               )}
               <span style={{ fontSize: '11px', color: '#aaa', marginLeft: 'auto' }}>
-                Total: <strong style={{ color: '#111' }}>₱{parseFloat(order.totalPrice || 0).toLocaleString('en-PH')}</strong>
+                Total: <strong style={{ color: '#111' }}>₱{(parseFloat(order.totalPrice) || parseFloat(order.totalAmount) || 0).toLocaleString('en-PH')}</strong>
               </span>
             </div>
 
@@ -578,7 +579,7 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
             <div className="text-right mr-1">
               <p className="text-[0.58rem] text-[#bbb] uppercase tracking-widest">Total</p>
               <p className="text-[1.05rem] font-black text-[#111] tracking-tight leading-tight">
-                ₱{parseFloat(order.totalPrice).toLocaleString('en-PH')}
+                ₱{(parseFloat(order.totalPrice) || parseFloat(order.totalAmount) || 0).toLocaleString('en-PH')}
               </p>
             </div>
             <button onClick={() => onOpenDetail(order)}
@@ -678,7 +679,7 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
               </div>
             )}
 
-            {order.status === 'pending' && (
+            {(order.status === 'pending' || order.status === 'Order Received') && (
               <button
                 onClick={() => onStatusUpdate(order.id, 'rejected')}
                 disabled={updatingStatus}

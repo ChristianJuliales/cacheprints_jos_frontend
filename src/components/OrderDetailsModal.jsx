@@ -707,7 +707,7 @@ export default function OrderDetailsModal({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            {order.status === 'pending' && (
+            {(order.status === 'pending' || order.status === 'Order Received') && (
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => onApprove(order.id)}

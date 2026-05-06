@@ -270,7 +270,7 @@ export default function OrdersPage() {
                       <div>
                         <p className="text-[0.65rem] text-gray-400 uppercase tracking-wider mb-0.5">Total Price</p>
                         <p className="text-[0.95rem] font-bold text-[#111]">
-                          ₱{parseFloat(order.totalPrice).toLocaleString('en-PH')}
+                          ₱{(parseFloat(order.totalPrice) || parseFloat(order.totalAmount) || 0).toLocaleString('en-PH')}
                         </p>
                       </div>
                       <div>
@@ -407,7 +407,7 @@ export default function OrdersPage() {
                   <div className="mb-5">
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-1">Total</p>
                     <p className="font-['Syne',serif] text-[1.9rem] font-extrabold text-[#111] tracking-tight leading-none">
-                      ₱{parseFloat(selectedOrder.totalPrice).toLocaleString('en-PH')}
+                      ₱{(parseFloat(selectedOrder.totalPrice) || parseFloat(selectedOrder.totalAmount) || 0).toLocaleString('en-PH')}
                     </p>
                   </div>
 
