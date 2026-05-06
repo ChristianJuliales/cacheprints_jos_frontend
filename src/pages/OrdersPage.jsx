@@ -8,13 +8,17 @@ import toast from 'react-hot-toast';
 
 /* ── Status config ── */
 const STATUS_CONFIG = {
-  pending:           { label: 'Pending',          pill: 'bg-amber-50 text-amber-800 border border-amber-200',    step: 0 },
-  'pending-payment': { label: 'Pending Payment',  pill: 'bg-orange-50 text-orange-800 border border-orange-200', step: 1 },
-  paid:              { label: 'Paid',             pill: 'bg-blue-50 text-blue-800 border border-blue-200',       step: 1 },
-  'in-production':   { label: 'In Production',    pill: 'bg-violet-50 text-violet-800 border border-violet-200', step: 2 },
-  'for-shipping':    { label: 'For Shipping',     pill: 'bg-cyan-50 text-cyan-800 border border-cyan-200',       step: 3 },
-  completed:         { label: 'Completed',        pill: 'bg-green-50 text-green-800 border border-green-200',    step: 4 },
-  rejected:          { label: 'Rejected',         pill: 'bg-red-50 text-red-800 border border-red-200',          step: -1 },
+  'Order Received':   { label: 'Order Received',   pill: 'bg-slate-50 text-slate-700 border border-slate-200',   step: 0 },
+  'pending-payment':  { label: 'Pending Payment',  pill: 'bg-orange-50 text-orange-800 border border-orange-200', step: 0 },
+  'Designing':        { label: 'Designing',        pill: 'bg-blue-50 text-blue-800 border border-blue-200',       step: 1 },
+  'Printing':         { label: 'Printing',         pill: 'bg-violet-50 text-violet-800 border border-violet-200', step: 2 },
+  'Heat Press':       { label: 'Heat Press',       pill: 'bg-pink-50 text-pink-800 border border-pink-200',       step: 2 },
+  'Sewing':           { label: 'Sewing',           pill: 'bg-emerald-50 text-emerald-800 border border-emerald-200', step: 2 },
+  'Quality Check':    { label: 'Quality Check',    pill: 'bg-amber-50 text-amber-800 border border-amber-200',     step: 2 },
+  'Ready for Pickup': { label: 'Ready for Pickup', pill: 'bg-cyan-50 text-cyan-800 border border-cyan-200',       step: 3 },
+  'for-shipping':     { label: 'For Shipping',     pill: 'bg-cyan-50 text-cyan-800 border border-cyan-200',       step: 3 },
+  'completed':        { label: 'Completed',        pill: 'bg-green-50 text-green-800 border border-green-200',    step: 4 },
+  'rejected':         { label: 'Rejected',         pill: 'bg-red-50 text-red-800 border border-red-200',          step: -1 },
 };
 
 /* ── Track steps — dynamic based on orderType ── */
@@ -193,7 +197,8 @@ export default function OrdersPage() {
   };
 
   const getStep = (status) => STATUS_CONFIG[status]?.step ?? 0;
-  const canViewReceipt = (status) => ['paid', 'in-production', 'for-shipping', 'completed'].includes(status);
+  const canViewReceipt = (status) => 
+    ['Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'for-shipping', 'completed'].includes(status);
 
   const handleCardClick = (order) => {
     setSelectedOrder(order);
