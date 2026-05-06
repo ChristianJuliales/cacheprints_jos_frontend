@@ -58,8 +58,9 @@ export default function OrderDetailsModal({
     const summary = {};
     lineup.forEach(p => {
       if (!p) return;
-      if (p.addOn && (p.addOn.name || typeof p.addOn === 'string')) {
-        const name = p.addOn.name || p.addOn;
+      if (p.addOn && (p.addOn.name || typeof p.addOn === 'string' || typeof p.addOn === 'object')) {
+        let name = p.addOn.name || p.addOn;
+        if (typeof name === 'object') name = 'Custom Add-on';
         const price = p.addOn.price || 0;
         if (!summary[name]) {
           summary[name] = { count: 0, price: parseFloat(price), total: 0 };
@@ -76,12 +77,16 @@ export default function OrderDetailsModal({
   if (!isOpen || !order) return null;
 
   const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    'pending-payment': 'bg-orange-100 text-orange-800',
-    paid: 'bg-blue-100 text-blue-800',
-    'in-production': 'bg-purple-100 text-purple-800',
-    completed: 'bg-green-100 text-green-800',
-    rejected: 'bg-red-100 text-red-800',
+    'Order Received':   'bg-slate-100 text-slate-800',
+    'pending-payment':  'bg-orange-100 text-orange-800',
+    'Designing':        'bg-blue-100 text-blue-800',
+    'Printing':         'bg-violet-100 text-violet-800',
+    'Heat Press':       'bg-pink-100 text-pink-800',
+    'Sewing':           'bg-emerald-100 text-emerald-800',
+    'Quality Check':    'bg-amber-100 text-amber-800',
+    'Ready for Pickup': 'bg-cyan-100 text-cyan-800',
+    'completed':        'bg-green-100 text-green-800',
+    'rejected':         'bg-red-100 text-red-800',
   };
 
   const formatDate = (date) => {

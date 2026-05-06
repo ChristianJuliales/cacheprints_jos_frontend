@@ -516,9 +516,9 @@ function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
           );
         })}
       </div>
-      {nextAllowed && (
+      {nextAllowed && STATUS_MAP[nextAllowed] && (
         <p className="text-[0.62rem] text-[#999] mt-0.5 pl-0.5">
-          ↑ Click <strong className="text-[#111]">{STATUS_MAP[nextAllowed]?.label}</strong> node to advance
+          ↑ Click <strong className="text-[#111]">{STATUS_MAP[nextAllowed].label}</strong> node to advance
         </p>
       )}
     </div>
@@ -530,7 +530,7 @@ function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
 ───────────────────────────────────────── */
 function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpenChat, onOpenSheet }) {
   const [expanded, setExpanded] = useState(false);
-  const statusCfg = STATUS_MAP[order.status] || STATUS_MAP['pending'];
+  const statusCfg = STATUS_MAP[order.status] || STATUS_MAP['Order Received'] || { color: '#ccc', bg: '#eee', text: '#888', icon: '❓', label: order.status };
   const isPickup  = order.orderType === 'pickup';
 
 
@@ -627,7 +627,7 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
               {order.customizationDetails?.fabricName && (
                 <div className="bg-blue-50 rounded-xl p-3 col-span-2">
                   <p className="text-[0.58rem] text-blue-400 uppercase tracking-wider mb-0.5">Fabric Type</p>
-                  <p className="text-[0.78rem] font-semibold text-blue-700">🧵 {order.customizationDetails.fabricName}</p>
+                  <p className="text-[0.78rem] font-semibold text-blue-700">🧵 {typeof order.customizationDetails.fabricName === 'object' ? 'Custom Fabric' : order.customizationDetails.fabricName}</p>
                 </div>
               )}
             </div>
