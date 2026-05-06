@@ -3,6 +3,7 @@ import apiClient from '../utils/apiClient';
 import { useChatStore } from '../store/chatStore';
 import OrderDetailsModal from '../components/OrderDetailsModal';
 import toast from 'react-hot-toast';
+import { formatCurrency, formatDate } from '../utils/helpers';
 
 /* ─────────────────────────────────────────
    STATUS PIPELINE
@@ -532,16 +533,6 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
   const statusCfg = STATUS_MAP[order.status] || STATUS_MAP['pending'];
   const isPickup  = order.orderType === 'pickup';
 
-  const formatDate = (date) => {
-    if (!date) return '';
-    try {
-      let d;
-      if (typeof date?.toDate === 'function') d = date.toDate();
-      else if (date?.seconds || date?._seconds) d = new Date((date.seconds || date._seconds) * 1000);
-      else d = new Date(date);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch { return ''; }
-  };
 
   return (
     <div className={`bg-white rounded-2xl border overflow-hidden transition-all duration-200
@@ -753,10 +744,12 @@ export default function AdminOrders() {
     try {
       const response = await apiClient.get('/jos/admin/orders');
       // The new JOS admin endpoint returns an array directly with correct aliases
-      setOrders(response.data);
+      setOrders(Array.isArray(response.data) ? response.data : []);
       setLoading(false);
-    } catch {
+    } catch (err) {
+      console.error('Fetch orders error:', err);
       toast.error('Failed to load orders');
+      setOrders([]);
       setLoading(false);
     }
   };
@@ -805,9 +798,9 @@ export default function AdminOrders() {
     setShowSheet(true);
   };
 
-  const activeOrders    = orders.filter(o => !['completed', 'rejected'].includes(o.status));
-  const completedOrders = orders.filter(o => o.status === 'completed');
-  const rejectedOrders  = orders.filter(o => o.status === 'rejected');
+  const activeOrders    = (orders || []).filter(o => o && !['completed', 'rejected'].includes(o.status));
+  const completedOrders = (orders || []).filter(o => o && o.status === 'completed');
+  const rejectedOrders  = (orders || []).filter(o => o && o.status === 'rejected');
 
   const statuses = ['all', 'pending', 'pending-payment', 'paid', 'in-production', 'for-shipping', 'completed', 'rejected'];
 

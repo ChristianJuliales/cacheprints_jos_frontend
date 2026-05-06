@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import apiClient from '../utils/apiClient';
 import toast from 'react-hot-toast';
+import { formatCurrency, formatDate } from '../utils/helpers';
 
 const oversizedSizes = ['2XL', '3XL', '4XL', '5XL', '6XL'];
 
@@ -30,6 +31,7 @@ export default function OrderDetailsModal({
   onUpdateStatus,
   updatingStatus,
 }) {
+  if (!isOpen || !order) return null;
 
   const [qrCodeFile, setQrCodeFile] = useState(null);
   const [qrCodePreview, setQrCodePreview] = useState(null);
@@ -874,7 +876,7 @@ export default function OrderDetailsModal({
                 disabled={updatingStatus}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2"
               >
-                <span>Advance to {NEXT_STATUS[order.status]}</span>
+                <span>Advance to {NEXT_STATUS[order.status] || 'Next Step'}</span>
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
