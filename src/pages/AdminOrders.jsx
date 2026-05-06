@@ -17,7 +17,7 @@ const STATUS_PIPELINE = [
   { key: 'Sewing',           label: 'Sewing',          short: 'Sewing',     color: '#10b981', bg: '#ecfdf5', text: '#065f46', icon: '🧵' },
   { key: 'Quality Check',    label: 'Quality Check',   short: 'Quality',    color: '#f59e0b', bg: '#fffbeb', text: '#92400e', icon: '🔍' },
   { key: 'Ready for Pickup', label: 'Ready for Pickup',short: 'Ready',      color: '#06b6d4', bg: '#ecfeff', text: '#155e75', icon: '📦' },
-  { key: 'Completed',        label: 'Completed',       short: 'Done',       color: '#10b981', bg: '#ecfdf5', text: '#065f46', icon: '🎉' },
+  { key: 'completed',        label: 'Completed',       short: 'Done',       color: '#10b981', bg: '#ecfdf5', text: '#065f46', icon: '🎉' },
 ];
 
 const REJECTED = { key: 'rejected', label: 'Rejected', short: 'Rejected', color: '#ef4444', bg: '#fef2f2', text: '#991b1b', icon: '✕' };
@@ -34,8 +34,8 @@ const NEXT_STATUS = {
   'Heat Press':      'Sewing',
   'Sewing':          'Quality Check',
   'Quality Check':   'Ready for Pickup',
-  'Ready for Pickup':'Completed',
-  'Completed':       null,
+  'Ready for Pickup':'completed',
+  'completed':       null,
 };
 
 /* ─────────────────────────────────────────
@@ -782,7 +782,7 @@ export default function AdminOrders() {
   const handleApprovePayment  = (id) => handleStatusUpdate(id, 'Designing');
   const handleStartProduction = (id) => handleStatusUpdate(id, 'Printing');
   const handleMarkForShipping = (id) => handleStatusUpdate(id, 'Ready for Pickup');
-  const handleComplete        = (id) => handleStatusUpdate(id, 'Completed');
+  const handleComplete        = (id) => handleStatusUpdate(id, 'completed');
 
   const handleUploadFinalPayment = (orderId, finalPaymentReceipt) => {
     const updated = orders.map(o => o.id === orderId ? { ...o, finalPaymentReceipt } : o);
@@ -798,11 +798,11 @@ export default function AdminOrders() {
     setShowSheet(true);
   };
 
-  const activeOrders    = (orders || []).filter(o => o && !['Completed', 'rejected'].includes(o.status));
-  const completedOrders = (orders || []).filter(o => o && (o.status === 'Completed' || o.isCompleted));
+  const activeOrders    = (orders || []).filter(o => o && !['completed', 'rejected'].includes(o.status));
+  const completedOrders = (orders || []).filter(o => o && o.status === 'completed');
   const rejectedOrders  = (orders || []).filter(o => o && o.status === 'rejected');
 
-  const statuses = ['all', 'Order Received', 'pending-payment', 'Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'Completed', 'rejected'];
+  const statuses = ['all', 'Order Received', 'pending-payment', 'Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'completed', 'rejected'];
 
   const filteredActive = activeOrders.filter(order => {
     const q = searchQuery.toLowerCase();
