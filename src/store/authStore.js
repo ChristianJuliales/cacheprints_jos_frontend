@@ -79,8 +79,13 @@ export const useAuthStore = create((set, get) => ({
 
   // ── Forgot password ───────────────────────────────────────────────────────
   forgotPassword: async (email) => {
-    // Placeholder for now as we removed Firebase
-    console.log('Forgot password for:', email);
+    // Implement with your MongoDB backend API
+    try {
+      const response = await apiClient.post('/auth/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.error || error.message;
+    }
   },
 
   // ── Logout ────────────────────────────────────────────────────────────────

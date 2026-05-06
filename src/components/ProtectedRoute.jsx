@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore';
 export default function ProtectedRoute({ children, requiredRole }) {
   const { user, userRole, isLoading } = useAuthStore();
 
-  // ✅ Wait for Firebase to confirm auth before making any decision
+  // ✅ Wait for backend to confirm auth before making any decision
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
