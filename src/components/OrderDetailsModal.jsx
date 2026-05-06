@@ -152,7 +152,7 @@ export default function OrderDetailsModal({
       reader.onload = async () => {
         const qrBase64 = reader.result;
         
-        await apiClient.put(`/admin/orders/${order.id}/upload-qr`, {
+        await apiClient.put(`/jos/admin/orders/${order.id}/upload-qr`, {
           qrCode: qrBase64,
           qrCodeLabel: qrCodeLabel,
         });
@@ -178,7 +178,7 @@ export default function OrderDetailsModal({
 
     setApprovePaymentLoading(true);
     try {
-      await apiClient.put(`/admin/orders/${order.id}/approve-payment`, {});
+      await apiClient.put(`/jos/admin/orders/${order.id}/approve-payment`, {});
       toast.success('Payment approved! Order moved to production.');
       onApprovePayment(order.id);
     } catch (error) {
@@ -191,7 +191,7 @@ export default function OrderDetailsModal({
   const handleRejectPayment = async () => {
     setApprovePaymentLoading(true);
     try {
-      await apiClient.put(`/admin/orders/${order.id}/reject-payment`, {});
+      await apiClient.put(`/jos/admin/orders/${order.id}/reject-payment`, {});
       toast.success('Payment rejected. Customer will need to resubmit.');
       onReject(order.id);
     } catch (error) {
@@ -232,7 +232,7 @@ export default function OrderDetailsModal({
       });
 
       // 2. Send to Backend
-      const response = await apiClient.put(`/admin/orders/${order.id}/start-production`, {
+      const response = await apiClient.put(`/jos/admin/orders/${order.id}/start-production`, {
         finalDesignUrl: base64
       });
 
@@ -281,7 +281,7 @@ export default function OrderDetailsModal({
         reader.readAsDataURL(finalPaymentFile);
       });
 
-      await apiClient.put(`/admin/orders/${order.id}/upload-final-payment`, {
+      await apiClient.put(`/jos/admin/orders/${order.id}/upload-final-payment`, {
         finalPaymentReceipt: base64
       });
 
