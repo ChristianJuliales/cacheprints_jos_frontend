@@ -77,7 +77,10 @@ export default function OrderDetailsModal({
   };
 
 
-  const lineup = useMemo(() => order?.customizationDetails?.lineup || [], [order]);
+  const lineup = useMemo(() => {
+    const raw = order?.customizationDetails?.lineup || order?.items || [];
+    return Array.isArray(raw) ? raw : [];
+  }, [order]);
   const oversizedSizes = ['XXL', '3XL', '4XL', '5XL'];
 
   const addonSummary = useMemo(() => {
@@ -465,7 +468,7 @@ export default function OrderDetailsModal({
           </div>
 
           {/* Customization Details */}
-          {order.customizationDetails && (
+          {order?.customizationDetails && (
             <div>
               <h3 className="text-lg font-semibold text-primary mb-3">Customization Details</h3>
               <div className="bg-light rounded-lg p-4 space-y-3">
@@ -498,7 +501,7 @@ export default function OrderDetailsModal({
                 )}
 
                 {/* Additional Colors */}
-                {order.customizationDetails.additionalColors && (
+                {order.customizationDetails?.additionalColors && (
                   <div>
                     <p className="text-gray-600 mb-2">Additional Colors:</p>
                     <div className="flex gap-2 ml-4">
@@ -525,7 +528,7 @@ export default function OrderDetailsModal({
                 )}
 
                 {/* Jersey Layout Comments */}
-                {order.customizationDetails.jerseyLayoutComments && (
+                {order.customizationDetails?.jerseyLayoutComments && (
                   <div className="border-t border-border pt-3">
                     <p className="text-gray-600">Layout Notes:</p>
                     <p className="font-medium mt-1 bg-white p-2 rounded border border-border">
@@ -535,7 +538,7 @@ export default function OrderDetailsModal({
                 )}
 
                 {/* Logo */}
-                {order.customizationDetails.logoImage && (
+                {order.customizationDetails?.logoImage && (
                   <div className="border-t border-border pt-3">
                     <p className="text-gray-600 mb-2">Logo Image:</p>
                     <img

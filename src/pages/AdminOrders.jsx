@@ -95,7 +95,7 @@ function OrderSheetModal({ order, isOpen, onClose }) {
   };
 
   // ── Pull lineup from customizationDetails first, fall back to items ──
-  const lineup = order.customizationDetails?.lineup || [];
+  const lineup = order?.customizationDetails?.lineup || [];
 
   const playerRows = lineup.length > 0
     ? lineup.map(player => ({
@@ -355,7 +355,7 @@ function OrderSheetModal({ order, isOpen, onClose }) {
                   Layout Notes:
                 </span>
                 <p style={{ marginTop: '4px', fontSize: '12px', color: '#444', fontStyle: 'italic', borderLeft: '3px solid #eee', paddingLeft: '10px', margin: '4px 0 0 0' }}>
-                  {order.customizationDetails.jerseyLayoutComments}
+                  {order.customizationDetails?.jerseyLayoutComments}
                 </p>
               </div>
             )}
@@ -628,7 +628,7 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
               {order.customizationDetails?.fabricName && (
                 <div className="bg-blue-50 rounded-xl p-3 col-span-2">
                   <p className="text-[0.58rem] text-blue-400 uppercase tracking-wider mb-0.5">Fabric Type</p>
-                  <p className="text-[0.78rem] font-semibold text-blue-700">🧵 {typeof order.customizationDetails.fabricName === 'object' ? 'Custom Fabric' : order.customizationDetails.fabricName}</p>
+                  <p className="text-[0.78rem] font-semibold text-blue-700">🧵 {typeof order.customizationDetails?.fabricName === 'object' ? 'Custom Fabric' : order.customizationDetails?.fabricName}</p>
                 </div>
               )}
             </div>
@@ -645,7 +645,7 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
               </div>
             )}
 
-            {order.customizationDetails && (
+            {order?.customizationDetails && (
               <div className="flex items-center gap-3 flex-wrap">
                 {order.customizationDetails.primaryColor && (
                   <div className="flex items-center gap-1.5">
