@@ -477,7 +477,10 @@ function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
           const isCurrent   = i === currentIdx;
           const isNext      = step.key === nextAllowed;
           const isFuture    = i > currentIdx && !isNext;
-          const isClickable = isNext && !updatingStatus && (step.key !== 'completed' || order.finalPaymentReceipt);
+          const isClickable = isNext && 
+                             !updatingStatus && 
+                             !['Printing', 'Heat Press', 'Sewing', 'Quality Check'].includes(order.status) &&
+                             (step.key !== 'completed' || order.finalPaymentReceipt);
 
           return (
             <div key={step.key} className="flex items-center flex-1 last:flex-none">

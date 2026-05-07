@@ -838,7 +838,7 @@ export default function OrderDetailsModal({
               </div>
             )}
 
-            {['Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup'].includes(order.status) && (
+            {order.status === 'Ready for Pickup' && (
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-4">
                 <div className="flex justify-between items-start">
                   <div>
@@ -895,18 +895,6 @@ export default function OrderDetailsModal({
               </div>
             )}
 
-            {['Printing', 'Heat Press', 'Sewing', 'Quality Check'].includes(order.status) && (
-              <button
-                onClick={() => onUpdateStatus(order.id, 'next')}
-                disabled={updatingStatus}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2"
-              >
-                <span>Advance to {NEXT_STATUS[order.status] || 'Next Step'}</span>
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </button>
-            )}
 
             {order.status === 'Ready for Pickup' && (
               <button
