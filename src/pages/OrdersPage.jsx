@@ -10,9 +10,9 @@ import toast from 'react-hot-toast';
 const STATUS_CONFIG = {
   'Order Received':   { label: 'Order Received',   pill: 'bg-slate-50 text-slate-700 border border-slate-200',   step: 0 },
   'pending':          { label: 'Pending',          pill: 'bg-amber-50 text-amber-800 border border-amber-200',    step: 0 },
-  'pending-payment':  { label: 'Pending Payment',  pill: 'bg-orange-50 text-orange-800 border border-orange-200', step: 0 },
-  'paid':             { label: 'Paid',             pill: 'bg-blue-50 text-blue-800 border border-blue-200',       step: 1 },
-  'Designing':        { label: 'Designing',        pill: 'bg-blue-50 text-blue-800 border border-blue-200',       step: 1 },
+  'pending-payment':  { label: 'Pending Payment',  pill: 'bg-orange-50 text-orange-800 border border-orange-200', step: 1 },
+  'paid':             { label: 'Paid',             pill: 'bg-blue-50 text-blue-800 border border-blue-200',       step: 2 },
+  'Designing':        { label: 'Designing',        pill: 'bg-blue-50 text-blue-800 border border-blue-200',       step: 2 },
   'Printing':         { label: 'Printing',         pill: 'bg-violet-50 text-violet-800 border border-violet-200', step: 2 },
   'Heat Press':       { label: 'Heat Press',       pill: 'bg-pink-50 text-pink-800 border border-pink-200',       step: 2 },
   'Sewing':           { label: 'Sewing',           pill: 'bg-emerald-50 text-emerald-800 border border-emerald-200', step: 2 },
