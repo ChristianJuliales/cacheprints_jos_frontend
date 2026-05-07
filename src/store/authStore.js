@@ -35,18 +35,8 @@ export const useAuthStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await apiClient.post('/jos/auth/register', { email, password, name });
-      const { token, user } = response.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-
-      set({
-        user,
-        userRole:        user.role?.toLowerCase(),
-        isAuthenticated: true,
-        isLoading:       false,
-      });
-      return user;
+      set({ isLoading: false });
+      return response.data;
     } catch (error) {
       set({ isLoading: false });
       throw error.response?.data?.error || error.message;

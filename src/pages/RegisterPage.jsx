@@ -32,6 +32,7 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await register(email, password, name);
+      toast.success('Account successfully created!');
       setRegisteredEmail(email);
       setRegistered(true);
     } catch (error) {
@@ -53,7 +54,7 @@ export default function RegisterPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Account successfully created!</h2>
             <p className="text-gray-500 text-sm mb-1">
               Your account has been created for:
             </p>
