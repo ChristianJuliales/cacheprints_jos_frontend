@@ -75,26 +75,33 @@ export default function OrderChat({ orderId, orderStatus }) {
             <p className="text-sm">No messages yet. Start a conversation!</p>
           </div>
         ) : (
-          messages.map(msg => (
-            <div
-              key={msg.id}
-              className={`flex ${String(msg.senderId) === String(user.id) ? 'justify-end' : 'justify-start'}`}
-            >
+          messages.map(msg => {
+            const isMe = user && (
+              String(msg.senderId) === String(user.id) || 
+              String(msg.senderId) === String(user._id)
+            );
+            
+            return (
               <div
-                className={`max-w-xs rounded-lg px-4 py-2 ${
-                  String(msg.senderId) === String(user.id)
-                    ? 'bg-primary text-white'
-                    : 'bg-light text-primary'
-                }`}
+                key={msg.id}
+                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
               >
-                <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
-                <p className="text-sm">{msg.message}</p>
-                <p className={`text-xs mt-1 ${String(msg.senderId) === String(user.id) ? 'text-white/70' : 'text-gray-500'}`}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </p>
+                <div
+                  className={`max-w-xs rounded-lg px-4 py-2 ${
+                    isMe
+                      ? 'bg-primary text-white'
+                      : 'bg-light text-primary'
+                  }`}
+                >
+                  <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
+                  <p className="text-sm">{msg.message}</p>
+                  <p className={`text-xs mt-1 ${isMe ? 'text-white/70' : 'text-gray-500'}`}>
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
