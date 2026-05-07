@@ -28,7 +28,7 @@ const DEFAULT_STATUS = STATUS_CONFIG['Order Received'];
 /* ── Track steps — dynamic based on orderType ── */
 const getTrackSteps = (orderType) => [
   { key: 'placed',     label: 'Order placed',      desc: 'Order received by store' },
-  { key: 'paid',       label: 'Payment confirmed', desc: 'Payment verified' },
+  { key: 'paid',       label: 'Payment', desc: 'Payment verified' },
   { key: 'production', label: 'In production',     desc: 'Manufacturing in progress' },
 
   {
