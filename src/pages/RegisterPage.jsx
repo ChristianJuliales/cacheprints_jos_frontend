@@ -17,8 +17,6 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // After successful registration show a success state instead of redirecting
-  const [registered, setRegistered] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,8 +31,7 @@ export default function RegisterPage() {
     try {
       await register(email, password, name);
       toast.success('Account successfully created!');
-      setRegisteredEmail(email);
-      setRegistered(true);
+      navigate('/login');
     } catch (error) {
       const message = error.response?.data?.error || error.message || 'Failed to create account.';
       toast.error(message);
@@ -43,45 +40,6 @@ export default function RegisterPage() {
     }
   };
 
-  // ── Success screen after registration ────────────────────────────────────────
-  if (registered) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg width="32" height="32" fill="none" stroke="#16a34a" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Account successfully created!</h2>
-            <p className="text-gray-500 text-sm mb-1">
-              Your account has been created for:
-            </p>
-            <p className="font-semibold text-gray-800 text-sm mb-5">{registeredEmail}</p>
-            <p className="text-gray-500 text-xs leading-relaxed mb-6">
-              You can now sign in to start designing and tracking your orders.
-            </p>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full py-2.5 bg-gray-900 text-white font-semibold rounded-lg text-sm hover:bg-gray-800 transition"
-            >
-              Go to Sign In
-            </button>
-            <p className="text-xs text-gray-400 mt-4">
-              Wrong email?{' '}
-              <button
-                onClick={() => { setRegistered(false); setEmail(''); }}
-                className="text-orange-500 font-semibold hover:text-orange-600"
-              >
-                Go back
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ── Registration form ─────────────────────────────────────────────────────────
   return (
