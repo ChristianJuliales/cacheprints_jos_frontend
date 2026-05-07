@@ -78,18 +78,18 @@ export default function OrderChat({ orderId, orderStatus }) {
           messages.map(msg => (
             <div
               key={msg.id}
-              className={`flex ${msg.senderId === user.uid ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${String(msg.senderId) === String(user.id) ? 'justify-end' : 'justify-start'}`}
             >
               <div
                 className={`max-w-xs rounded-lg px-4 py-2 ${
-                  msg.senderId === user.uid
+                  String(msg.senderId) === String(user.id)
                     ? 'bg-primary text-white'
                     : 'bg-light text-primary'
                 }`}
               >
                 <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
                 <p className="text-sm">{msg.message}</p>
-                <p className={`text-xs mt-1 ${msg.senderId === user.uid ? 'text-white/70' : 'text-gray-500'}`}>
+                <p className={`text-xs mt-1 ${String(msg.senderId) === String(user.id) ? 'text-white/70' : 'text-gray-500'}`}>
                   {new Date(msg.timestamp).toLocaleTimeString()}
                 </p>
               </div>
