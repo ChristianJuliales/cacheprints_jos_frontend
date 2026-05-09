@@ -47,13 +47,14 @@ export default function AdminDashboard() {
     if (v === 'printing') return 'bg-blue-100 text-blue-700';
     if (v === 'prep') return 'bg-yellow-100 text-yellow-700';
     if (v === 'pending') return 'bg-orange-100 text-orange-700';
+    if (v === 'cancelled' || v === 'rejected') return 'bg-red-100 text-red-700';
     return 'bg-gray-100 text-gray-600';
   };
 
   const progressWidth = (status) => {
     if (!status) return '20%';
     const v = status.toLowerCase();
-    if (v === 'completed') return '100%';
+    if (v === 'completed' || v === 'cancelled' || v === 'rejected') return '100%';
     if (v === 'printing') return '60%';
     if (v === 'prep') return '40%';
     return '20%';

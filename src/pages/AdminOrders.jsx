@@ -21,9 +21,10 @@ const STATUS_PIPELINE = [
 ];
 
 const REJECTED = { key: 'rejected', label: 'Rejected', short: 'Rejected', color: '#ef4444', bg: '#fef2f2', text: '#991b1b', icon: '✕' };
+const CANCELLED = { key: 'cancelled', label: 'Cancelled', short: 'Cancelled', color: '#ef4444', bg: '#fef2f2', text: '#991b1b', icon: '✕' };
 
 const STATUS_MAP = Object.fromEntries(
-  [...STATUS_PIPELINE, REJECTED].map(s => [s.key, s])
+  [...STATUS_PIPELINE, REJECTED, CANCELLED].map(s => [s.key, s])
 );
 
 const NEXT_STATUS = {
@@ -445,7 +446,7 @@ function OrderSheetModal({ order, isOpen, onClose }) {
 ───────────────────────────────────────── */
 function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
   const isPickup   = order.orderType === 'pickup';
-  const isRejected = order.status === 'rejected';
+  const isRejected = order.status === 'rejected' || order.status === 'cancelled';
 
   const steps = isPickup
     ? STATUS_PIPELINE.filter(s => s.key !== 'for-shipping')
@@ -464,7 +465,9 @@ function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
     return (
       <div className="flex items-center gap-2 py-1">
         <span className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-600">✕</span>
-        <span className="text-xs font-semibold text-red-500 uppercase tracking-wide">Order Rejected</span>
+        <span className="text-xs font-semibold text-red-500 uppercase tracking-wide">
+          {order.status === 'cancelled' ? 'Order Cancelled' : 'Order Rejected'}
+        </span>
       </div>
     );
   }
@@ -677,6 +680,13 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
                   {order.shippingAddress.firstName} {order.shippingAddress.lastName}<br/>
                   {order.shippingAddress.street}, {order.shippingAddress.city}
                 </p>
+              </div>
+            )}
+
+            {order.status === 'cancelled' && order.cancellationReason && (
+              <div className="bg-red-50 rounded-xl p-3 border border-red-100 mt-3">
+                <p className="text-[0.58rem] text-red-400 uppercase tracking-wider mb-0.5">Cancellation Reason</p>
+                <p className="text-[0.78rem] font-semibold text-red-700">{order.cancellationReason}</p>
               </div>
             )}
 
