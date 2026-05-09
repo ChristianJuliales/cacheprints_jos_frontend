@@ -21,6 +21,7 @@ const STATUS_CONFIG = {
   'for-shipping':     { label: 'For Shipping',     pill: 'bg-cyan-50 text-cyan-800 border border-cyan-200',       step: 3 },
   'completed':        { label: 'Completed',        pill: 'bg-green-50 text-green-800 border border-green-200',    step: 4 },
   'rejected':         { label: 'Rejected',         pill: 'bg-red-50 text-red-800 border border-red-200',          step: -1 },
+  'cancelled':        { label: 'Cancelled',        pill: 'bg-red-50 text-red-800 border border-red-200',          step: -1 },
 };
 
 const DEFAULT_STATUS = STATUS_CONFIG['Order Received'];
@@ -332,7 +333,7 @@ export default function OrdersPage() {
     ['Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'for-shipping', 'completed'].includes(status);
 
   const canCancelOrder = (status) => {
-    const nonCancellableStatuses = ['completed', 'rejected', 'for-shipping'];
+    const nonCancellableStatuses = ['completed', 'rejected', 'cancelled', 'for-shipping'];
     return !nonCancellableStatuses.includes(status);
   };
 
