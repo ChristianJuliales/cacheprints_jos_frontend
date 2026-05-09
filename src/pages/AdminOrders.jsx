@@ -21,10 +21,9 @@ const STATUS_PIPELINE = [
 ];
 
 const REJECTED = { key: 'rejected', label: 'Rejected', short: 'Rejected', color: '#ef4444', bg: '#fef2f2', text: '#991b1b', icon: '✕' };
-const CANCELLED = { key: 'cancelled', label: 'Cancelled', short: 'Cancelled', color: '#ef4444', bg: '#fef2f2', text: '#991b1b', icon: '✕' };
 
 const STATUS_MAP = Object.fromEntries(
-  [...STATUS_PIPELINE, REJECTED, CANCELLED].map(s => [s.key, s])
+  [...STATUS_PIPELINE, REJECTED].map(s => [s.key, s])
 );
 
 const NEXT_STATUS = {
@@ -74,6 +73,325 @@ const PrintIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z"/>
   </svg>
 );
+const UploadIcon = () => (
+  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 10l-4-4m0 0L8 10m4-4v12"/>
+  </svg>
+);
+const StarIcon = ({ filled }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? '#f59e0b' : 'none'} stroke="#f59e0b" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+  </svg>
+);
+const PackageIcon = () => (
+  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+  </svg>
+);
+const MessageSquareIcon = () => (
+  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+  </svg>
+);
+
+/* ─────────────────────────────────────────
+   PROOF OF PICKUP / DELIVERY PANEL
+───────────────────────────────────────── */
+function ProofOfDeliveryPanel({ order, onProofUploaded }) {
+  const [uploading, setUploading] = useState(false);
+  const [urlInput, setUrlInput]   = useState('');
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [note, setNote]           = useState('');
+  const fileInputRef              = useRef(null);
+
+  const isPickup     = order.orderType === 'pickup';
+  const isCompleted  = order.status === 'completed';
+  const hasProof     = !!order.deliveryProof;
+
+  const label = isPickup ? 'Pickup' : 'Delivery';
+
+  // ── Upload file via FormData ──
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('proof', file);
+      if (note) formData.append('note', note);
+      const res = await apiClient.post(`/jos/admin/orders/${order.id}/delivery-proof`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const proofData = res.data?.deliveryProof || {
+        url: URL.createObjectURL(file),
+        note,
+        uploadedAt: new Date().toISOString(),
+        type: 'file',
+      };
+      toast.success(`${label} proof uploaded!`);
+      onProofUploaded(order.id, proofData);
+    } catch {
+      toast.error('Failed to upload proof');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  // ── Save URL ──
+  const handleSaveUrl = async () => {
+    if (!urlInput.trim()) return;
+    setUploading(true);
+    try {
+      const res = await apiClient.post(`/jos/admin/orders/${order.id}/delivery-proof`, {
+        url: urlInput.trim(),
+        note,
+      });
+      const proofData = res.data?.deliveryProof || {
+        url: urlInput.trim(),
+        note,
+        uploadedAt: new Date().toISOString(),
+        type: 'url',
+      };
+      toast.success(`${label} proof saved!`);
+      onProofUploaded(order.id, proofData);
+      setUrlInput('');
+      setShowUrlInput(false);
+      setNote('');
+    } catch {
+      toast.error('Failed to save proof URL');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className={`rounded-xl border overflow-hidden ${hasProof ? 'border-emerald-200 bg-emerald-50' : isCompleted ? 'border-amber-200 bg-amber-50' : 'border-[#e5e7eb] bg-[#fafafa]'}`}>
+      {/* Header */}
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-black/5">
+        <PackageIcon />
+        <span className="text-[0.62rem] font-bold uppercase tracking-wider text-[#555]">
+          Proof of {label}
+        </span>
+        {hasProof && (
+          <span className="ml-auto text-[0.55rem] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
+            ✓ Uploaded
+          </span>
+        )}
+        {!hasProof && isCompleted && (
+          <span className="ml-auto text-[0.55rem] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+            ⚠ Missing
+          </span>
+        )}
+      </div>
+
+      <div className="p-3 space-y-2.5">
+        {/* Existing proof */}
+        {hasProof && (
+          <div className="space-y-2">
+            <div className="rounded-lg overflow-hidden border border-emerald-200 bg-white">
+              <img
+                src={order.deliveryProof.url}
+                alt={`${label} proof`}
+                className="w-full max-h-48 object-contain"
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+            </div>
+            {order.deliveryProof.note && (
+              <p className="text-[0.72rem] text-emerald-800 italic bg-emerald-100 rounded-lg px-3 py-2">
+                "{order.deliveryProof.note}"
+              </p>
+            )}
+            <p className="text-[0.6rem] text-[#999]">
+              Uploaded {order.deliveryProof.uploadedAt
+                ? new Date(order.deliveryProof.uploadedAt).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
+                : 'recently'}
+            </p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="text-[0.65rem] font-bold text-[#888] underline underline-offset-2 hover:text-[#555] transition-colors"
+            >
+              Replace photo
+            </button>
+          </div>
+        )}
+
+        {/* Upload controls */}
+        {!hasProof && (
+          <>
+            {/* Note field */}
+            <input
+              type="text"
+              placeholder={`Add a note (e.g. "Customer picked up at 2pm")`}
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              className="w-full px-3 py-2 text-[0.75rem] border border-[#e5e7eb] rounded-lg bg-white focus:outline-none focus:border-[#111] transition-colors placeholder-[#ccc]"
+            />
+
+            <div className="flex gap-2">
+              {/* Upload photo */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#111] text-white text-[0.68rem] font-bold uppercase tracking-wider rounded-lg hover:bg-[#333] disabled:opacity-50 transition-colors"
+              >
+                {uploading ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : <UploadIcon />}
+                {uploading ? 'Uploading…' : 'Upload Photo'}
+              </button>
+
+              {/* Paste URL toggle */}
+              <button
+                onClick={() => setShowUrlInput(!showUrlInput)}
+                className="px-3 py-2 border border-[#e5e7eb] bg-white text-[0.68rem] font-bold text-[#666] rounded-lg hover:bg-[#f5f5f5] transition-colors whitespace-nowrap"
+              >
+                Paste URL
+              </button>
+            </div>
+
+            {showUrlInput && (
+              <div className="flex gap-2 animate-in">
+                <input
+                  type="url"
+                  placeholder="https://…"
+                  value={urlInput}
+                  onChange={e => setUrlInput(e.target.value)}
+                  className="flex-1 px-3 py-2 text-[0.75rem] border border-[#e5e7eb] rounded-lg bg-white focus:outline-none focus:border-[#111] transition-colors placeholder-[#ccc]"
+                />
+                <button
+                  onClick={handleSaveUrl}
+                  disabled={uploading || !urlInput.trim()}
+                  className="px-3 py-2 bg-[#111] text-white text-[0.68rem] font-bold rounded-lg hover:bg-[#333] disabled:opacity-40 transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   CUSTOMER REVIEW PANEL
+───────────────────────────────────────── */
+function CustomerReviewPanel({ order }) {
+  const review = order.customerReview;
+
+  if (!review) {
+    return (
+      <div className="rounded-xl border border-[#e5e7eb] bg-[#fafafa] overflow-hidden">
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-black/5">
+          <MessageSquareIcon />
+          <span className="text-[0.62rem] font-bold uppercase tracking-wider text-[#555]">
+            Customer Review
+          </span>
+          <span className="ml-auto text-[0.55rem] font-bold uppercase tracking-wider text-[#bbb] bg-[#f0f0f0] px-2 py-0.5 rounded-full">
+            No review yet
+          </span>
+        </div>
+        <div className="px-3 py-4 text-center">
+          <p className="text-[0.72rem] text-[#ccc]">
+            The customer hasn't left a review yet.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const rating     = review.rating || 0;
+  const maxStars   = 5;
+  const submittedAt = review.submittedAt
+    ? new Date(review.submittedAt).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
+    : null;
+
+  const ratingColor = rating >= 4 ? '#10b981' : rating >= 3 ? '#f59e0b' : '#ef4444';
+  const ratingBg    = rating >= 4 ? '#ecfdf5' : rating >= 3 ? '#fffbeb' : '#fef2f2';
+  const ratingText  = rating >= 4 ? '#065f46' : rating >= 3 ? '#92400e' : '#991b1b';
+
+  return (
+    <div className="rounded-xl border border-[#e5e7eb] overflow-hidden bg-white">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-[#f0f0f0]">
+        <MessageSquareIcon />
+        <span className="text-[0.62rem] font-bold uppercase tracking-wider text-[#555]">
+          Customer Review
+        </span>
+        <span className="ml-auto text-[0.55rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+          style={{ background: ratingBg, color: ratingText }}>
+          {rating >= 4 ? '😊 Positive' : rating >= 3 ? '😐 Neutral' : '😞 Negative'}
+        </span>
+      </div>
+
+      <div className="p-3 space-y-2.5">
+        {/* Stars + numeric */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5">
+            {Array.from({ length: maxStars }).map((_, i) => (
+              <StarIcon key={i} filled={i < rating} />
+            ))}
+          </div>
+          <span className="text-[0.8rem] font-black" style={{ color: ratingColor }}>
+            {rating}<span className="text-[0.62rem] text-[#bbb] font-normal">/{maxStars}</span>
+          </span>
+        </div>
+
+        {/* Review text */}
+        {review.comment && (
+          <div className="bg-[#fafafa] rounded-lg px-3 py-2.5 border-l-2 border-[#e5e7eb]">
+            <p className="text-[0.78rem] text-[#444] leading-relaxed italic">
+              "{review.comment}"
+            </p>
+          </div>
+        )}
+
+        {/* Tags / aspects */}
+        {review.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {review.tags.map(tag => (
+              <span key={tag} className="text-[0.6rem] font-bold uppercase tracking-wider bg-[#f0f0f0] text-[#666] px-2 py-0.5 rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Photo(s) from customer */}
+        {review.photos?.length > 0 && (
+          <div className="grid grid-cols-3 gap-1.5">
+            {review.photos.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={url}
+                  alt={`Review photo ${i + 1}`}
+                  className="w-full h-20 object-cover rounded-lg border border-[#e5e7eb] hover:opacity-80 transition-opacity"
+                />
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* Meta */}
+        <p className="text-[0.6rem] text-[#bbb]">
+          Submitted by <strong className="text-[#888]">{review.customerName || order.customerName}</strong>
+          {submittedAt && <> · {submittedAt}</>}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 /* ─────────────────────────────────────────
    ORDER SHEET MODAL
@@ -95,7 +413,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
     } catch { return 'TBD'; }
   };
 
-  // ── Pull lineup from customizationDetails first, fall back to items ──
   const lineup = order?.customizationDetails?.lineup || [];
 
   const playerRows = lineup.length > 0
@@ -113,28 +430,23 @@ function OrderSheetModal({ order, isOpen, onClose }) {
         note:   item.note         || item.ribbing     || '',
       })) || []);
 
-  // ── Colors ──
   const primaryColor   = order.customizationDetails?.primaryColor  || '#F5C518';
   const secondaryColor = order.customizationDetails?.accentColor
                       || order.customizationDetails?.secondaryColor
                       || '#2B8FD6';
 
-  // ── Team name ──
   const teamName = order.teamName
                 || order.design
                 || order.customizationDetails?.customText
                 || order.customerName
                 || 'Team Name';
 
-  // ── Apparel type (product name) — saved as customizationDetails.apparelType ──
   const apparelType = order.customizationDetails?.apparelType
                    || order.items?.[0]?.productName
                    || '—';
 
-  // ── Fabric name — saved as customizationDetails.fabricName by CustomizePage ──
   const fabricName = order.customizationDetails?.fabricName || null;
-
-  const deadline = getDeadline();
+  const deadline   = getDeadline();
   const largeSizes = new Set(['XXL', '3XL', '4XL', '5XL', 'XXXL', 'XXXXL']);
 
   const handlePrint = () => {
@@ -173,7 +485,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
         overflow: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)',
         display: 'flex', flexDirection: 'column',
       }}>
-        {/* Modal toolbar */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 20px', borderBottom: '1px solid #f0f0f0',
@@ -210,11 +521,9 @@ function OrderSheetModal({ order, isOpen, onClose }) {
           </div>
         </div>
 
-        {/* ── Sheet content ── */}
         <div ref={sheetRef} style={{ padding: '32px 36px', fontFamily: "'Barlow', sans-serif" }}>
           <div style={{ position: 'relative' }}>
 
-            {/* Deadline watermark */}
             <div style={{
               position: 'absolute', left: '-28px', top: '60px',
               transform: 'rotate(-90deg)', transformOrigin: 'left center',
@@ -224,7 +533,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
               DEADLINE: {deadline.toUpperCase()} (12PM)
             </div>
 
-            {/* ── Header ── */}
             <div style={{ textAlign: 'center', marginBottom: '6px', paddingLeft: '16px' }}>
               <h1 style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
@@ -234,12 +542,10 @@ function OrderSheetModal({ order, isOpen, onClose }) {
                 {teamName}
               </h1>
 
-              {/* Apparel type + fabric type pills */}
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 gap: '8px', marginTop: '8px', flexWrap: 'wrap',
               }}>
-                {/* Apparel type */}
                 <span style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontSize: '12px', fontWeight: 700, color: '#444',
@@ -250,7 +556,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
                   {apparelType}
                 </span>
 
-                {/* Fabric type — only shown if set */}
                 {fabricName && (
                   <>
                     <span style={{ color: '#ccc', fontSize: '14px' }}>·</span>
@@ -267,7 +572,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
                 )}
               </div>
 
-              {/* Customer name + order ID */}
               <p style={{ marginTop: '6px', fontSize: '11px', color: '#aaa' }}>
                 {order.customerName && order.customerName !== teamName && (
                   <span>{order.customerName} · </span>
@@ -276,7 +580,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
               </p>
             </div>
 
-            {/* ── Player table ── */}
             <div style={{ marginTop: '20px', paddingLeft: '16px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
@@ -335,7 +638,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
                 </tbody>
               </table>
 
-              {/* Player count + oversized legend */}
               <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <span style={{ fontSize: '11px', color: '#888' }}>
                   {playerRows.length} player{playerRows.length !== 1 ? 's' : ''} total
@@ -349,7 +651,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Layout notes */}
             {order.customizationDetails?.jerseyLayoutComments && (
               <div style={{ marginTop: '16px', paddingLeft: '16px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -361,41 +662,67 @@ function OrderSheetModal({ order, isOpen, onClose }) {
               </div>
             )}
 
-            {/* ── Final Design Mockup ── */}
             {order.finalDesignUrl && (
-              <div style={{ 
-                marginTop: '32px', 
-                display: 'flex', 
-                flexDirection: 'column', 
+              <div style={{
+                marginTop: '32px',
+                display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 width: '100%',
                 paddingLeft: '16px'
               }}>
-                <span style={{ 
-                  fontSize: '10px', fontWeight: 800, color: '#222', 
+                <span style={{
+                  fontSize: '10px', fontWeight: 800, color: '#222',
                   textTransform: 'uppercase', letterSpacing: '0.15em',
                   display: 'block', marginBottom: '10px', borderBottom: '2px solid #f0f0f0',
                   paddingBottom: '4px', textAlign: 'center', width: '100%', maxWidth: '400px'
                 }}>
                   Final Approved Design Mockup
                 </span>
-                <div style={{ 
-                  background: '#f9f9f9', border: '1px solid #ddd', 
-                  borderRadius: '10px', padding: '12px', 
+                <div style={{
+                  background: '#f9f9f9', border: '1px solid #ddd',
+                  borderRadius: '10px', padding: '12px',
                   display: 'flex', justifyContent: 'center', alignItems: 'center',
                   width: '100%', maxWidth: '600px'
                 }}>
-                  <img 
-                    src={order.finalDesignUrl} 
-                    alt="Final Design" 
-                    style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain', display: 'block' }} 
+                  <img
+                    src={order.finalDesignUrl}
+                    alt="Final Design"
+                    style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain', display: 'block' }}
                   />
                 </div>
               </div>
             )}
 
-            {/* ── Delivery + total ── */}
+            {/* ── Proof of delivery section in printed sheet ── */}
+            {order.deliveryProof && (
+              <div style={{ marginTop: '28px', paddingLeft: '16px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 800, color: '#222', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  Proof of {order.orderType === 'pickup' ? 'Pickup' : 'Delivery'}
+                </span>
+                <div style={{ marginTop: '8px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  <img
+                    src={order.deliveryProof.url}
+                    alt="Delivery proof"
+                    style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ddd' }}
+                  />
+                  <div>
+                    {order.deliveryProof.note && (
+                      <p style={{ fontSize: '11px', color: '#444', fontStyle: 'italic', margin: '0 0 4px 0' }}>
+                        "{order.deliveryProof.note}"
+                      </p>
+                    )}
+                    <p style={{ fontSize: '10px', color: '#aaa' }}>
+                      {order.deliveryProof.uploadedAt
+                        ? new Date(order.deliveryProof.uploadedAt).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
+                        : ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div style={{ marginTop: '32px', paddingLeft: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{
                 fontSize: '11px', fontWeight: 700, color: '#fff',
@@ -414,7 +741,6 @@ function OrderSheetModal({ order, isOpen, onClose }) {
               </span>
             </div>
 
-            {/* ── Sign-off ── */}
             <div style={{
               marginTop: '32px', paddingLeft: '16px',
               borderTop: '1px solid #e5e7eb', paddingTop: '20px',
@@ -446,7 +772,7 @@ function OrderSheetModal({ order, isOpen, onClose }) {
 ───────────────────────────────────────── */
 function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
   const isPickup   = order.orderType === 'pickup';
-  const isRejected = order.status === 'rejected' || order.status === 'cancelled';
+  const isRejected = order.status === 'rejected';
 
   const steps = isPickup
     ? STATUS_PIPELINE.filter(s => s.key !== 'for-shipping')
@@ -465,9 +791,7 @@ function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
     return (
       <div className="flex items-center gap-2 py-1">
         <span className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-600">✕</span>
-        <span className="text-xs font-semibold text-red-500 uppercase tracking-wide">
-          {order.status === 'cancelled' ? 'Order Cancelled' : 'Order Rejected'}
-        </span>
+        <span className="text-xs font-semibold text-red-500 uppercase tracking-wide">Order Rejected</span>
       </div>
     );
   }
@@ -480,8 +804,8 @@ function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
           const isCurrent   = i === currentIdx;
           const isNext      = step.key === nextAllowed;
           const isFuture    = i > currentIdx && !isNext;
-          const isClickable = isNext && 
-                             !updatingStatus && 
+          const isClickable = isNext &&
+                             !updatingStatus &&
                              !['Printing', 'Heat Press', 'Sewing', 'Quality Check'].includes(order.status) &&
                              (step.key !== 'completed' || order.finalPaymentReceipt);
 
@@ -535,11 +859,15 @@ function ProgressTracker({ order, onStatusUpdate, updatingStatus }) {
 /* ─────────────────────────────────────────
    ORDER CARD
 ───────────────────────────────────────── */
-function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpenChat, onOpenSheet }) {
-  const [expanded, setExpanded] = useState(false);
+function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpenChat, onOpenSheet, onProofUploaded }) {
+  const [expanded, setExpanded]   = useState(false);
+  const [activeTab, setActiveTab] = useState('details'); // 'details' | 'proof' | 'review'
   const statusCfg = STATUS_MAP[order.status] || STATUS_MAP['Order Received'] || { color: '#ccc', bg: '#eee', text: '#888', icon: '❓', label: order.status };
   const isPickup  = order.orderType === 'pickup';
 
+  const isCompleted = order.status === 'completed';
+  const hasProof    = !!order.deliveryProof;
+  const hasReview   = !!order.customerReview;
 
   return (
     <div className={`bg-white rounded-2xl border overflow-hidden transition-all duration-200
@@ -570,6 +898,20 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
                 }`}>
                   {isPickup ? '🏬 Pickup' : '🚚 Ship'}
                 </span>
+                {/* Proof badge */}
+                {isCompleted && (
+                  <span className={`text-[0.55rem] font-bold uppercase px-1.5 py-0.5 rounded-full tracking-wider ${
+                    hasProof ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {hasProof ? '📸 Proof' : '📸 No Proof'}
+                  </span>
+                )}
+                {/* Review badge */}
+                {hasReview && (
+                  <span className="text-[0.55rem] font-bold uppercase px-1.5 py-0.5 rounded-full tracking-wider bg-yellow-100 text-yellow-700">
+                    ⭐ Review
+                  </span>
+                )}
               </div>
               <p className="text-[0.72rem] text-[#999] truncate">
                 <span className="font-semibold text-[#555]">{order.customerName}</span>
@@ -609,103 +951,137 @@ function OrderCard({ order, onStatusUpdate, updatingStatus, onOpenDetail, onOpen
         <ProgressTracker order={order} onStatusUpdate={onStatusUpdate} updatingStatus={updatingStatus} />
 
         {expanded && (
-          <div className="mt-4 pt-4 border-t border-[#f0f0f0] space-y-3 animate-in">
-            <div className="grid grid-cols-2 gap-3">
-              {order.customerEmail && (
-                <div className="bg-[#fafafa] rounded-xl p-3">
-                  <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Email</p>
-                  <p className="text-[0.78rem] font-semibold text-[#333] truncate">{order.customerEmail}</p>
-                </div>
-              )}
-              {order.phoneNumber && (
-                <div className="bg-[#fafafa] rounded-xl p-3">
-                  <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Phone</p>
-                  <p className="text-[0.78rem] font-semibold text-[#333]">{order.phoneNumber}</p>
-                </div>
-              )}
-              <div className="bg-[#fafafa] rounded-xl p-3">
-                <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Delivery</p>
-                <p className="text-[0.78rem] font-semibold text-[#333]">{isPickup ? 'Store Pickup' : 'Shipping'}</p>
-              </div>
-              <div className="bg-[#fafafa] rounded-xl p-3">
-                <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Items</p>
-                <p className="text-[0.78rem] font-semibold text-[#333]">{order.items?.length || 0} item(s)</p>
-              </div>
-              {order.customizationDetails?.fabricName && (
-                <div className="bg-blue-50 rounded-xl p-3 col-span-2">
-                  <p className="text-[0.58rem] text-blue-400 uppercase tracking-wider mb-0.5">Fabric Type</p>
-                  <p className="text-[0.78rem] font-semibold text-blue-700">🧵 {typeof order.customizationDetails?.fabricName === 'object' ? 'Custom Fabric' : order.customizationDetails?.fabricName}</p>
-                </div>
-              )}
+          <div className="mt-4 pt-4 border-t border-[#f0f0f0] animate-in">
+
+            {/* ── Tab bar ── */}
+            <div className="flex gap-1 mb-4 bg-[#f5f5f5] p-1 rounded-xl">
+              {[
+                { key: 'details', label: 'Details' },
+                { key: 'proof',   label: `${isPickup ? 'Pickup' : 'Delivery'} Proof`, dot: isCompleted && !hasProof },
+                { key: 'review',  label: 'Customer Review', dot: hasReview },
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[0.68rem] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                    activeTab === tab.key
+                      ? 'bg-white text-[#111] shadow-sm'
+                      : 'text-[#999] hover:text-[#555]'
+                  }`}
+                >
+                  {tab.label}
+                  {tab.dot && (
+                    <span className={`w-1.5 h-1.5 rounded-full ${isCompleted && !hasProof && tab.key === 'proof' ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                  )}
+                </button>
+              ))}
             </div>
 
-            {order.items?.length > 0 && (
-              <div className="bg-[#fafafa] rounded-xl p-3">
-                <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-2">Items Ordered</p>
-                {order.items.map((item, i) => (
-                  <div key={i} className="flex justify-between items-center py-1.5 border-b border-[#eee] last:border-0">
-                    <span className="text-[0.78rem] font-medium text-[#333]">{item.productName}</span>
-                    <span className="text-[0.72rem] text-[#999]">×{item.quantity} · ₱{item.price}</span>
+            {/* ── DETAILS TAB ── */}
+            {activeTab === 'details' && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {order.customerEmail && (
+                    <div className="bg-[#fafafa] rounded-xl p-3">
+                      <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Email</p>
+                      <p className="text-[0.78rem] font-semibold text-[#333] truncate">{order.customerEmail}</p>
+                    </div>
+                  )}
+                  {order.phoneNumber && (
+                    <div className="bg-[#fafafa] rounded-xl p-3">
+                      <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Phone</p>
+                      <p className="text-[0.78rem] font-semibold text-[#333]">{order.phoneNumber}</p>
+                    </div>
+                  )}
+                  <div className="bg-[#fafafa] rounded-xl p-3">
+                    <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Delivery</p>
+                    <p className="text-[0.78rem] font-semibold text-[#333]">{isPickup ? 'Store Pickup' : 'Shipping'}</p>
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="bg-[#fafafa] rounded-xl p-3">
+                    <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-0.5">Items</p>
+                    <p className="text-[0.78rem] font-semibold text-[#333]">{order.items?.length || 0} item(s)</p>
+                  </div>
+                  {order.customizationDetails?.fabricName && (
+                    <div className="bg-blue-50 rounded-xl p-3 col-span-2">
+                      <p className="text-[0.58rem] text-blue-400 uppercase tracking-wider mb-0.5">Fabric Type</p>
+                      <p className="text-[0.78rem] font-semibold text-blue-700">🧵 {typeof order.customizationDetails?.fabricName === 'object' ? 'Custom Fabric' : order.customizationDetails?.fabricName}</p>
+                    </div>
+                  )}
+                </div>
 
-            {order?.customizationDetails && (
-              <div className="flex items-center gap-3 flex-wrap">
-                {order.customizationDetails.primaryColor && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-md border border-black/10 shadow-sm"
-                      style={{ backgroundColor: order.customizationDetails.primaryColor }} />
-                    <span className="text-[0.65rem] text-[#999] font-mono">{order.customizationDetails.primaryColor}</span>
+                {order.items?.length > 0 && (
+                  <div className="bg-[#fafafa] rounded-xl p-3">
+                    <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-2">Items Ordered</p>
+                    {order.items.map((item, i) => (
+                      <div key={i} className="flex justify-between items-center py-1.5 border-b border-[#eee] last:border-0">
+                        <span className="text-[0.78rem] font-medium text-[#333]">{item.productName}</span>
+                        <span className="text-[0.72rem] text-[#999]">×{item.quantity} · ₱{item.price}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
-                {order.customizationDetails.accentColor && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-md border border-black/10 shadow-sm"
-                      style={{ backgroundColor: order.customizationDetails.accentColor }} />
-                    <span className="text-[0.65rem] text-[#999] font-mono">{order.customizationDetails.accentColor}</span>
+
+                {order?.customizationDetails && (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {order.customizationDetails.primaryColor && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-5 h-5 rounded-md border border-black/10 shadow-sm"
+                          style={{ backgroundColor: order.customizationDetails.primaryColor }} />
+                        <span className="text-[0.65rem] text-[#999] font-mono">{order.customizationDetails.primaryColor}</span>
+                      </div>
+                    )}
+                    {order.customizationDetails.accentColor && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-5 h-5 rounded-md border border-black/10 shadow-sm"
+                          style={{ backgroundColor: order.customizationDetails.accentColor }} />
+                        <span className="text-[0.65rem] text-[#999] font-mono">{order.customizationDetails.accentColor}</span>
+                      </div>
+                    )}
+                    {order.customizationDetails.customText && (
+                      <span className="text-[0.72rem] text-[#666] italic">"{order.customizationDetails.customText}"</span>
+                    )}
                   </div>
                 )}
-                {order.customizationDetails.customText && (
-                  <span className="text-[0.72rem] text-[#666] italic">"{order.customizationDetails.customText}"</span>
+
+                {!isPickup && order.shippingAddress && (
+                  <div className="bg-[#fafafa] rounded-xl p-3">
+                    <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-1">Ship to</p>
+                    <p className="text-[0.78rem] text-[#444] leading-relaxed">
+                      {order.shippingAddress.firstName} {order.shippingAddress.lastName}<br/>
+                      {order.shippingAddress.street}, {order.shippingAddress.city}
+                    </p>
+                  </div>
                 )}
+
+                {(order.status === 'pending' || order.status === 'Order Received') && (
+                  <button
+                    onClick={() => onStatusUpdate(order.id, 'rejected')}
+                    disabled={updatingStatus}
+                    className="w-full py-2 text-[0.75rem] font-bold text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
+                  >
+                    ✕ Reject Order
+                  </button>
+                )}
+
+                <button
+                  onClick={() => onOpenSheet(order)}
+                  className="w-full py-2 text-[0.75rem] font-bold text-[#555] border border-[#e5e7eb] rounded-xl hover:bg-[#fafafa] transition-colors flex items-center justify-center gap-2"
+                >
+                  <PrintIcon /> View / Print Order Sheet
+                </button>
               </div>
             )}
 
-            {!isPickup && order.shippingAddress && (
-              <div className="bg-[#fafafa] rounded-xl p-3">
-                <p className="text-[0.58rem] text-[#bbb] uppercase tracking-wider mb-1">Ship to</p>
-                <p className="text-[0.78rem] text-[#444] leading-relaxed">
-                  {order.shippingAddress.firstName} {order.shippingAddress.lastName}<br/>
-                  {order.shippingAddress.street}, {order.shippingAddress.city}
-                </p>
-              </div>
+            {/* ── PROOF TAB ── */}
+            {activeTab === 'proof' && (
+              <ProofOfDeliveryPanel order={order} onProofUploaded={onProofUploaded} />
             )}
 
-            {order.status === 'cancelled' && order.cancellationReason && (
-              <div className="bg-red-50 rounded-xl p-3 border border-red-100 mt-3">
-                <p className="text-[0.58rem] text-red-400 uppercase tracking-wider mb-0.5">Cancellation Reason</p>
-                <p className="text-[0.78rem] font-semibold text-red-700">{order.cancellationReason}</p>
-              </div>
+            {/* ── REVIEW TAB ── */}
+            {activeTab === 'review' && (
+              <CustomerReviewPanel order={order} />
             )}
 
-            {(order.status === 'pending' || order.status === 'Order Received') && (
-              <button
-                onClick={() => onStatusUpdate(order.id, 'rejected')}
-                disabled={updatingStatus}
-                className="w-full py-2 text-[0.75rem] font-bold text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
-              >
-                ✕ Reject Order
-              </button>
-            )}
-
-            <button
-              onClick={() => onOpenSheet(order)}
-              className="w-full py-2 text-[0.75rem] font-bold text-[#555] border border-[#e5e7eb] rounded-xl hover:bg-[#fafafa] transition-colors flex items-center justify-center gap-2"
-            >
-              <PrintIcon /> View / Print Order Sheet
-            </button>
           </div>
         )}
       </div>
@@ -757,7 +1133,6 @@ export default function AdminOrders() {
   const fetchAllOrders = async () => {
     try {
       const response = await apiClient.get('/jos/admin/orders');
-      // The new JOS admin endpoint returns an array directly with correct aliases
       setOrders(Array.isArray(response.data) ? response.data : []);
       setLoading(false);
     } catch (err) {
@@ -791,6 +1166,13 @@ export default function AdminOrders() {
     }
   };
 
+  // ── Proof uploaded callback ──
+  const handleProofUploaded = (orderId, proofData) => {
+    const updated = orders.map(o => o.id === orderId ? { ...o, deliveryProof: proofData } : o);
+    setOrders(updated);
+    if (selectedOrder?.id === orderId) setSelectedOrder({ ...selectedOrder, deliveryProof: proofData });
+  };
+
   const handleApprove         = (id) => handleStatusUpdate(id, 'pending-payment');
   const handleReject          = (id) => handleStatusUpdate(id, 'rejected');
   const handleApprovePayment  = (id) => handleStatusUpdate(id, 'Designing');
@@ -806,7 +1188,6 @@ export default function AdminOrders() {
     }
   };
 
-
   const handleOpenSheet = (order) => {
     setSheetOrder(order);
     setShowSheet(true);
@@ -815,6 +1196,10 @@ export default function AdminOrders() {
   const activeOrders    = (orders || []).filter(o => o && !['completed', 'rejected'].includes(o.status));
   const completedOrders = (orders || []).filter(o => o && o.status === 'completed');
   const rejectedOrders  = (orders || []).filter(o => o && o.status === 'rejected');
+
+  // Stats: count completed orders missing proof
+  const proofMissingCount = completedOrders.filter(o => !o.deliveryProof).length;
+  const pendingReviewCount = (orders || []).filter(o => o.customerReview).length;
 
   const statuses = ['all', 'Order Received', 'pending-payment', 'Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'completed', 'rejected'];
 
@@ -852,9 +1237,30 @@ export default function AdminOrders() {
               Click the dashed node on any order card to advance its status
             </p>
           </div>
-          <div className="flex items-center gap-1.5 bg-white border border-[#e5e7eb] rounded-xl px-3 py-2 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[0.7rem] font-semibold text-[#666]">Live</span>
+          <div className="flex items-center gap-3">
+            {/* Alert banners */}
+            {proofMissingCount > 0 && (
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                <span className="text-amber-500 text-base">📸</span>
+                <div>
+                  <p className="text-[0.62rem] font-black text-amber-700 uppercase tracking-wider leading-none">{proofMissingCount} proof{proofMissingCount !== 1 ? 's' : ''} missing</p>
+                  <p className="text-[0.55rem] text-amber-500 leading-none mt-0.5">Completed orders</p>
+                </div>
+              </div>
+            )}
+            {pendingReviewCount > 0 && (
+              <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2">
+                <span className="text-yellow-500 text-base">⭐</span>
+                <div>
+                  <p className="text-[0.62rem] font-black text-yellow-700 uppercase tracking-wider leading-none">{pendingReviewCount} review{pendingReviewCount !== 1 ? 's' : ''}</p>
+                  <p className="text-[0.55rem] text-yellow-500 leading-none mt-0.5">From customers</p>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 bg-white border border-[#e5e7eb] rounded-xl px-3 py-2 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[0.7rem] font-semibold text-[#666]">Live</span>
+            </div>
           </div>
         </div>
 
@@ -912,6 +1318,7 @@ export default function AdminOrders() {
                 onOpenDetail={(o) => { setSelectedOrder(o); setShowModal(true); }}
                 onOpenChat={openChat}
                 onOpenSheet={handleOpenSheet}
+                onProofUploaded={handleProofUploaded}
               />
             ))}
           </div>
@@ -944,12 +1351,28 @@ export default function AdminOrders() {
               <div className="border-t border-[#f0f0f0] divide-y divide-[#f5f5f5]">
                 {[...completedOrders, ...rejectedOrders].map(order => {
                   const cfg = STATUS_MAP[order.status];
+                  const hasProof  = !!order.deliveryProof;
+                  const hasReview = !!order.customerReview;
                   return (
                     <div key={order.id} className="px-6 py-4 flex items-center justify-between hover:bg-[#fafafa] transition-colors">
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{cfg?.icon}</span>
                         <div>
-                          <p className="font-mono text-[0.8rem] font-bold text-[#333]">#{order.id.substring(0, 10)}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-mono text-[0.8rem] font-bold text-[#333]">#{order.id.substring(0, 10)}</p>
+                            {order.status === 'completed' && (
+                              <span className={`text-[0.5rem] font-bold uppercase px-1.5 py-0.5 rounded-full ${
+                                hasProof ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {hasProof ? '📸 Proof' : '📸 Missing'}
+                              </span>
+                            )}
+                            {hasReview && (
+                              <span className="text-[0.5rem] font-bold uppercase px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                                ⭐ {order.customerReview.rating}/5
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[0.7rem] text-[#aaa]">
                             {order.customerName} · ₱{parseFloat(order.totalPrice).toLocaleString('en-PH')}
                           </p>
