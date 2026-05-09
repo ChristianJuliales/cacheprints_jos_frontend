@@ -187,9 +187,7 @@ export default function StorePage() {
         <div className="max-w-6xl mx-auto px-8 py-16">
           <div className="flex justify-between items-end mb-1">
             <h2 className="text-2xl font-black uppercase tracking-wide text-white">Featured Products</h2>
-            <Link to="/store" className="text-[0.72rem] font-bold uppercase tracking-widest text-secondary border-b border-secondary pb-0.5 hover:opacity-70 transition-opacity">
-              View Catalog
-            </Link>
+        
           </div>
           <p className="text-[0.65rem] text-gray-500 uppercase tracking-widest mb-8">Select a base garment to begin</p>
 
