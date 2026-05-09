@@ -122,10 +122,11 @@ export default function StorePage() {
     navigate('/customize', { state: { selectedProduct: product } });
   };
 
-  // Featured Products carousel (all products)
-  const maxCarousel = Math.max(0, products.length - ITEMS_PER_PAGE);
-  const visibleProducts = products.slice(carouselIndex, carouselIndex + ITEMS_PER_PAGE);
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  // Featured Products carousel (exclude Add-Ons)
+  const featuredProducts = products.filter((p) => p.category !== 'Excluded / Add-Ons');
+  const maxCarousel = Math.max(0, featuredProducts.length - ITEMS_PER_PAGE);
+  const visibleProducts = featuredProducts.slice(carouselIndex, carouselIndex + ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(featuredProducts.length / ITEMS_PER_PAGE);
   const currentPage = Math.floor(carouselIndex / ITEMS_PER_PAGE);
 
   // Group products by category for the 3 sections
@@ -187,7 +188,9 @@ export default function StorePage() {
         <div className="max-w-6xl mx-auto px-8 py-16">
           <div className="flex justify-between items-end mb-1">
             <h2 className="text-2xl font-black uppercase tracking-wide text-white">Featured Products</h2>
-        
+            <Link to="/store" className="text-[0.72rem] font-bold uppercase tracking-widest text-secondary border-b border-secondary pb-0.5 hover:opacity-70 transition-opacity">
+              View Catalog
+            </Link>
           </div>
           <p className="text-[0.65rem] text-gray-500 uppercase tracking-widest mb-8">Select a base garment to begin</p>
 
