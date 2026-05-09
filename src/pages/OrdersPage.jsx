@@ -178,6 +178,9 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
   const { openChat } = useChatStore();
 
   useEffect(() => {
@@ -203,6 +206,35 @@ export default function OrdersPage() {
   const getStep = (status) => STATUS_CONFIG[status]?.step ?? 0;
   const canViewReceipt = (status) => 
     ['Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'for-shipping', 'completed'].includes(status);
+
+  const canCancelOrder = (status) => {
+    // Orders can be cancelled if they're not already completed, rejected, or shipped
+    const nonCancellableStatuses = ['completed', 'rejected', 'for-shipping'];
+    return !nonCancellableStatuses.includes(status);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!selectedOrder || !cancellationReason.trim()) {
+      toast.error('Please provide a reason for cancellation');
+      return;
+    }
+
+    setCancelLoading(true);
+    try {
+      await apiClient.put(`/jos/orders/${selectedOrder.id}/cancel`, {
+        cancellationReason: cancellationReason.trim(),
+      });
+      toast.success('Order cancelled successfully');
+      setShowCancelModal(false);
+      setCancellationReason('');
+      fetchUserOrders();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Failed to cancel order');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   const handleCardClick = (order) => {
     setSelectedOrder(order);
@@ -431,10 +463,18 @@ export default function OrdersPage() {
                   )}
                   <button
                     onClick={() => openChat(selectedOrder.id, selectedOrder.status)}
-                    className="w-full py-2.5 text-[0.82rem] font-bold text-[#111] bg-transparent border-[1.5px] border-[#ddd] rounded-xl hover:bg-[#f8f7f4] hover:border-[#bbb] transition-all"
+                    className="w-full py-2.5 mb-2.5 text-[0.82rem] font-bold text-[#111] bg-transparent border-[1.5px] border-[#ddd] rounded-xl hover:bg-[#f8f7f4] hover:border-[#bbb] transition-all"
                   >
                     Open Chat with Admin
                   </button>
+                  {canCancelOrder(selectedOrder.status) && (
+                    <button
+                      onClick={() => setShowCancelModal(true)}
+                      className="w-full py-2.5 text-[0.82rem] font-bold text-red-600 bg-transparent border-[1.5px] border-red-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
                 </>
               ) : (
                 <div className="text-center py-12">
@@ -474,6 +514,64 @@ export default function OrdersPage() {
           isOpen={showReceiptModal}
           onClose={() => setShowReceiptModal(false)}
         />
+
+        {/* Cancellation Modal */}
+        {showCancelModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+              <h2 className="font-['Syne',serif] text-[1.3rem] font-extrabold text-[#111] mb-2">
+                Cancel Order
+              </h2>
+              <p className="text-[0.82rem] text-gray-500 mb-4">
+                Are you sure you want to cancel this order? Please tell us why.
+              </p>
+
+              {/* Order ID Display */}
+              <div className="bg-[#f8f7f4] p-3 rounded-lg mb-4">
+                <p className="text-[0.7rem] text-gray-400 uppercase tracking-wider mb-1">Order ID</p>
+                <p className="font-mono text-[0.78rem] text-gray-600">{selectedOrder?.id}</p>
+              </div>
+
+              {/* Reason Text Area */}
+              <div className="mb-5">
+                <label className="block text-[0.75rem] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                  Reason for Cancellation *
+                </label>
+                <textarea
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  placeholder="Please explain why you'd like to cancel this order (e.g., changed my mind, wrong size, found alternative, etc.)"
+                  className="w-full p-3 border border-[#e8e5e0] rounded-lg text-[0.82rem] focus:outline-none focus:border-[#111] focus:ring-1 focus:ring-[#111] resize-none"
+                  rows="4"
+                />
+                <p className="text-[0.7rem] text-gray-400 mt-1">
+                  {cancellationReason.length}/500 characters
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancellationReason('');
+                  }}
+                  disabled={cancelLoading}
+                  className="flex-1 py-2.5 text-[0.82rem] font-bold text-[#111] bg-transparent border-[1.5px] border-[#ddd] rounded-xl hover:bg-[#f8f7f4] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Keep Order
+                </button>
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={cancelLoading || !cancellationReason.trim()}
+                  className="flex-1 py-2.5 text-[0.82rem] font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
