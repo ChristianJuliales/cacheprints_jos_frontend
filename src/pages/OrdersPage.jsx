@@ -30,7 +30,6 @@ const getTrackSteps = (orderType) => [
   { key: 'placed',     label: 'Order placed',      desc: 'Order received by store' },
   { key: 'paid',       label: 'Payment', desc: 'Payment verified' },
   { key: 'production', label: 'In production',     desc: 'Manufacturing in progress' },
-
   {
     key: 'shipping',
     label: orderType === 'pickup' ? 'Ready for pickup' : 'For shipping',
@@ -113,7 +112,6 @@ function SidebarTracker({ currentStep, order }) {
     { done: `${formatDateShort(order?.createdAt) || 'Received'} — confirmed`, pending: 'Waiting for order' },
     { done: 'Payment verified',   pending: 'Awaiting payment' },
     { done: 'Production complete', pending: 'Manufacturing in progress' },
-
     {
       done:    orderType === 'pickup' ? 'Ready at store for pickup' : 'Dispatched to courier',
       pending: orderType === 'pickup' ? 'Preparing for pickup'     : 'Awaiting dispatch',
@@ -170,6 +168,133 @@ function formatDate(date) {
   } catch { return 'N/A'; }
 }
 
+/* ── Cancellation Reason Options ── */
+const CANCEL_REASONS = [
+  { value: 'changed_mind', label: 'Changed my mind' },
+  { value: 'wrong_size', label: 'Ordered wrong size' },
+  { value: 'wrong_design', label: 'Wrong design / customization' },
+  { value: 'found_alternative', label: 'Found a better alternative' },
+  { value: 'too_long', label: 'Taking too long' },
+  { value: 'financial', label: 'Financial reasons' },
+  { value: 'duplicate', label: 'Duplicate order' },
+  { value: 'other', label: 'Other reason' },
+];
+
+/* ── Cancel Modal ── */
+function CancelModal({ order, onClose, onConfirm, loading }) {
+  const [selectedReason, setSelectedReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
+
+  const finalReason = selectedReason === 'other'
+    ? customReason.trim()
+    : CANCEL_REASONS.find(r => r.value === selectedReason)?.label || '';
+
+  const canSubmit = finalReason.length > 0 && !loading;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-[#f0ede8]">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg width="14" height="14" fill="none" stroke="#dc2626" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h2 className="font-['Syne',serif] text-[1.2rem] font-extrabold text-[#111]">
+              Cancel Order
+            </h2>
+          </div>
+          <p className="text-[0.8rem] text-gray-400 ml-11">
+            This action cannot be undone. Please select a reason.
+          </p>
+        </div>
+
+        <div className="px-6 py-4">
+          {/* Order ID */}
+          <div className="bg-[#f8f7f4] px-3 py-2 rounded-lg mb-4 flex items-center gap-2">
+            <svg width="12" height="12" fill="none" stroke="#999" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span className="font-mono text-[0.72rem] text-gray-500">Order #{order?.id?.substring(0, 12)}</span>
+          </div>
+
+          {/* Reason selector */}
+          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2.5">
+            Reason for cancellation <span className="text-red-400">*</span>
+          </p>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {CANCEL_REASONS.map(reason => (
+              <button
+                key={reason.value}
+                onClick={() => setSelectedReason(reason.value)}
+                className={`text-left px-3 py-2 rounded-xl border text-[0.75rem] font-medium transition-all ${
+                  selectedReason === reason.value
+                    ? 'bg-[#111] text-white border-[#111]'
+                    : 'bg-white text-[#555] border-[#e8e5e0] hover:border-[#bbb] hover:bg-[#f8f7f4]'
+                }`}
+              >
+                {reason.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom reason (only when "Other" is selected) */}
+          {selectedReason === 'other' && (
+            <div className="mb-3">
+              <textarea
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value.slice(0, 300))}
+                placeholder="Please describe your reason..."
+                className="w-full p-3 border border-[#e8e5e0] rounded-xl text-[0.8rem] focus:outline-none focus:border-[#111] focus:ring-1 focus:ring-[#111] resize-none text-[#111] placeholder-gray-300"
+                rows="3"
+                autoFocus
+              />
+              <p className="text-[0.68rem] text-gray-300 text-right mt-0.5">{customReason.length}/300</p>
+            </div>
+          )}
+
+          {/* Warning note */}
+          {selectedReason && (
+            <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 mb-4">
+              <svg width="13" height="13" fill="none" stroke="#d97706" strokeWidth="1.8" viewBox="0 0 24 24" className="mt-0.5 flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              <p className="text-[0.72rem] text-amber-700 leading-relaxed">
+                Cancellations may not be accepted if your order is already in production. Our team will review and confirm.
+              </p>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div className="flex gap-2.5">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 py-2.5 text-[0.82rem] font-bold text-[#111] bg-transparent border-[1.5px] border-[#ddd] rounded-xl hover:bg-[#f8f7f4] hover:border-[#bbb] transition-all disabled:opacity-50"
+            >
+              Keep Order
+            </button>
+            <button
+              onClick={() => onConfirm(finalReason)}
+              disabled={!canSubmit}
+              className="flex-1 py-2.5 text-[0.82rem] font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Cancelling...
+                </>
+              ) : 'Confirm Cancel'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Page ── */
 export default function OrdersPage() {
   const { user } = useAuthStore();
@@ -179,7 +304,6 @@ export default function OrdersPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancellationReason, setCancellationReason] = useState('');
   const [cancelLoading, setCancelLoading] = useState(false);
   const { openChat } = useChatStore();
 
@@ -193,7 +317,6 @@ export default function OrdersPage() {
     if (!user) return;
     try {
       const response = await apiClient.get('/jos/my-orders');
-      // Map _id to id for frontend compatibility
       const mappedOrders = response.data.map(o => ({ ...o, id: o._id }));
       setOrders(mappedOrders);
       setLoading(false);
@@ -204,29 +327,25 @@ export default function OrdersPage() {
   };
 
   const getStep = (status) => STATUS_CONFIG[status]?.step ?? 0;
-  const canViewReceipt = (status) => 
+
+  const canViewReceipt = (status) =>
     ['Designing', 'Printing', 'Heat Press', 'Sewing', 'Quality Check', 'Ready for Pickup', 'for-shipping', 'completed'].includes(status);
 
   const canCancelOrder = (status) => {
-    // Orders can be cancelled if they're not already completed, rejected, or shipped
     const nonCancellableStatuses = ['completed', 'rejected', 'for-shipping'];
     return !nonCancellableStatuses.includes(status);
   };
 
-  const handleCancelOrder = async () => {
-    if (!selectedOrder || !cancellationReason.trim()) {
-      toast.error('Please provide a reason for cancellation');
-      return;
-    }
-
+  const handleConfirmCancel = async (reason) => {
+    if (!selectedOrder) return;
     setCancelLoading(true);
     try {
       await apiClient.put(`/jos/orders/${selectedOrder.id}/cancel`, {
-        cancellationReason: cancellationReason.trim(),
+        cancellationReason: reason,
       });
       toast.success('Order cancelled successfully');
       setShowCancelModal(false);
-      setCancellationReason('');
+      setSelectedOrder(null);
       fetchUserOrders();
     } catch (error) {
       console.error(error);
@@ -234,6 +353,12 @@ export default function OrdersPage() {
     } finally {
       setCancelLoading(false);
     }
+  };
+
+  const openCancelModal = (e, order) => {
+    e.stopPropagation();
+    setSelectedOrder(order);
+    setShowCancelModal(true);
   };
 
   const handleCardClick = (order) => {
@@ -290,7 +415,6 @@ export default function OrdersPage() {
                         <p className="text-[0.72rem] text-gray-400 mt-0.5">{formatDate(order.createdAt)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {/* Delivery type badge */}
                         {order.orderType && (
                           <span className={`text-[0.62rem] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
                             order.orderType === 'pickup'
@@ -339,12 +463,31 @@ export default function OrdersPage() {
                       </div>
                     )}
 
-                    {/* Mini progress tracker — pickup/shipping aware */}
+                    {/* Mini progress tracker */}
                     <MiniTracker currentStep={step} orderType={order.orderType} />
 
-                    {/* Receipt link */}
-                    {canViewReceipt(order.status) && (
-                      <div className="flex justify-end mt-2.5">
+                    {/* Bottom actions row */}
+                    <div className="flex items-center justify-between mt-2.5">
+                      {/* Cancel button — left side */}
+                      {canCancelOrder(order.status) ? (
+                        <button
+                          onClick={(e) => openCancelModal(e, order)}
+                          className="flex items-center gap-1.5 text-[0.72rem] font-semibold text-red-500 hover:text-red-700 transition-colors group"
+                        >
+                          <svg
+                            width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                            className="group-hover:scale-110 transition-transform"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancel order
+                        </button>
+                      ) : (
+                        <div /> /* spacer */
+                      )}
+
+                      {/* Receipt link — right side */}
+                      {canViewReceipt(order.status) && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -355,8 +498,8 @@ export default function OrdersPage() {
                         >
                           View Receipt
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -366,7 +509,6 @@ export default function OrdersPage() {
             <div className="bg-white rounded-2xl border border-[#e8e5e0] p-6 sticky top-6">
               {selectedOrder ? (
                 <>
-                  {/* Status */}
                   <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-1.5">
                     Order Status
                   </p>
@@ -376,7 +518,6 @@ export default function OrdersPage() {
                       : (STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status)}
                   </p>
 
-                  {/* Order ID */}
                   <div className="mb-4 pb-4 border-b border-[#f0ede8]">
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-2">Order ID</p>
                     <p className="font-mono text-[0.78rem] text-gray-500 bg-[#f8f7f4] px-2.5 py-1.5 rounded-lg break-all">
@@ -384,7 +525,6 @@ export default function OrdersPage() {
                     </p>
                   </div>
 
-                  {/* Delivery type */}
                   {selectedOrder.orderType && (
                     <div className="mb-4 pb-4 border-b border-[#f0ede8]">
                       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-1.5">
@@ -400,13 +540,11 @@ export default function OrdersPage() {
                     </div>
                   )}
 
-                  {/* Vertical progress — pickup/shipping aware */}
                   <div className="mb-4 pb-4 border-b border-[#f0ede8]">
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-1">Progress</p>
                     <SidebarTracker currentStep={getStep(selectedOrder.status)} order={selectedOrder} />
                   </div>
 
-                  {/* Customization */}
                   {selectedOrder.customizationDetails && (
                     <div className="mb-4 pb-4 border-b border-[#f0ede8]">
                       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-2.5">
@@ -444,7 +582,6 @@ export default function OrdersPage() {
                     </div>
                   )}
 
-                  {/* Total */}
                   <div className="mb-5">
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-1">Total</p>
                     <p className="font-['Syne',serif] text-[1.9rem] font-extrabold text-[#111] tracking-tight leading-none">
@@ -452,7 +589,6 @@ export default function OrdersPage() {
                     </p>
                   </div>
 
-                  {/* Actions */}
                   {canViewReceipt(selectedOrder.status) && (
                     <button
                       onClick={() => setShowReceiptModal(true)}
@@ -469,7 +605,7 @@ export default function OrdersPage() {
                   </button>
                   {canCancelOrder(selectedOrder.status) && (
                     <button
-                      onClick={() => setShowCancelModal(true)}
+                      onClick={(e) => openCancelModal(e, selectedOrder)}
                       className="w-full py-2.5 text-[0.82rem] font-bold text-red-600 bg-transparent border-[1.5px] border-red-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all"
                     >
                       Cancel Order
@@ -515,62 +651,14 @@ export default function OrdersPage() {
           onClose={() => setShowReceiptModal(false)}
         />
 
-        {/* Cancellation Modal */}
+        {/* Cancel Modal */}
         {showCancelModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-              <h2 className="font-['Syne',serif] text-[1.3rem] font-extrabold text-[#111] mb-2">
-                Cancel Order
-              </h2>
-              <p className="text-[0.82rem] text-gray-500 mb-4">
-                Are you sure you want to cancel this order? Please tell us why.
-              </p>
-
-              {/* Order ID Display */}
-              <div className="bg-[#f8f7f4] p-3 rounded-lg mb-4">
-                <p className="text-[0.7rem] text-gray-400 uppercase tracking-wider mb-1">Order ID</p>
-                <p className="font-mono text-[0.78rem] text-gray-600">{selectedOrder?.id}</p>
-              </div>
-
-              {/* Reason Text Area */}
-              <div className="mb-5">
-                <label className="block text-[0.75rem] font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                  Reason for Cancellation *
-                </label>
-                <textarea
-                  value={cancellationReason}
-                  onChange={(e) => setCancellationReason(e.target.value)}
-                  placeholder="Please explain why you'd like to cancel this order (e.g., changed my mind, wrong size, found alternative, etc.)"
-                  className="w-full p-3 border border-[#e8e5e0] rounded-lg text-[0.82rem] focus:outline-none focus:border-[#111] focus:ring-1 focus:ring-[#111] resize-none"
-                  rows="4"
-                />
-                <p className="text-[0.7rem] text-gray-400 mt-1">
-                  {cancellationReason.length}/500 characters
-                </p>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowCancelModal(false);
-                    setCancellationReason('');
-                  }}
-                  disabled={cancelLoading}
-                  className="flex-1 py-2.5 text-[0.82rem] font-bold text-[#111] bg-transparent border-[1.5px] border-[#ddd] rounded-xl hover:bg-[#f8f7f4] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Keep Order
-                </button>
-                <button
-                  onClick={handleCancelOrder}
-                  disabled={cancelLoading || !cancellationReason.trim()}
-                  className="flex-1 py-2.5 text-[0.82rem] font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <CancelModal
+            order={selectedOrder}
+            loading={cancelLoading}
+            onClose={() => setShowCancelModal(false)}
+            onConfirm={handleConfirmCancel}
+          />
         )}
       </div>
     </div>
