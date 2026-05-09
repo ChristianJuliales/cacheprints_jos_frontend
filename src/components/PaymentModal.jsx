@@ -133,16 +133,16 @@ export default function PaymentModal({
                     </div>
                     <div className="flex justify-between items-center bg-amber-50 border border-amber-200 rounded p-3 mt-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-amber-900 uppercase tracking-wide">Downpayment (20%)</span>
+                        <span className="text-sm font-bold text-amber-900 uppercase tracking-wide">Design Fee</span>
                         <span className="text-[10px] text-amber-700">Required to begin layout production</span>
                       </div>
                       <span className="text-xl font-black text-amber-900">
-                        ₱{(order.totalPrice * 0.20).toFixed(2)}
+                        ₱{(order.depositAmount || 500).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px] text-gray-400 px-1 pt-1">
                       <span>Remaining Balance</span>
-                      <span>₱{(order.totalPrice * 0.80).toFixed(2)}</span>
+                      <span>₱{(order.totalPrice - (order.depositAmount || 500)).toFixed(2)}</span>
                     </div>
                   </div>
                 </>

@@ -69,7 +69,7 @@ const TIERS = [
     priceFrom: 700,
     priceTo: 950,
     unit: 'per piece',
-    minOrder: 'No minimum',
+    minOrder: '5 pcs minimum',
     color: '#2a2a2a',
     accent: '#ffffff',
     highlight: false,

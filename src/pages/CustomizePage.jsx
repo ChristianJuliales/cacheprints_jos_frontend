@@ -719,7 +719,7 @@ export default function CustomizePage() {
   const [color1, setColor1] = useState('#ffffff');
   const [color2, setColor2] = useState('#ffffff');
   const [color3, setColor3] = useState('#ffffff');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(5);
 
   // Fabric
   const [fabricType, setFabricType] = useState(null);
@@ -760,7 +760,7 @@ export default function CustomizePage() {
     return lineup.reduce((sum, p) => sum + parseFloat(p.addOn?.price || 0), 0).toFixed(2);
   }, [lineup]);
 
-  const depositAmount = parseFloat(totalPrice) * 0.20;
+  const depositAmount = 500;
 
   useEffect(() => {
     setLineup(prev => {
@@ -956,7 +956,7 @@ export default function CustomizePage() {
           <div className="mb-6 border border-amber-300 bg-amber-50 rounded p-4">
             <p className="text-sm font-bold text-amber-800 mb-1">⚠ Required Deposit Before Layout</p>
             <p className="text-xs text-amber-700 leading-relaxed">
-              A deposit of <span className="font-bold">₱{depositAmount.toFixed(2)}</span> (20% of total) is required before the admin proceeds with your jersey layout/design.
+              A deposit of <span className="font-bold">₱{depositAmount.toFixed(2)}</span> (Designing Fee) is required before the admin proceeds with your jersey layout/design.
               This will be applied to your total upon order completion.
             </p>
           </div>
@@ -1038,7 +1038,7 @@ export default function CustomizePage() {
               <span className="font-black text-lg text-[#111]">₱{totalPrice}</span>
             </div>
             <div className="flex justify-between text-sm bg-amber-100 border border-amber-300 rounded px-3 py-2 mt-2">
-              <span className="font-bold text-amber-800">Deposit Due Now (20%)</span>
+              <span className="font-bold text-amber-800">Design Fee (Required)</span>
               <span className="font-black text-amber-900">₱{depositAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-xs text-gray-400 pt-1">
@@ -1110,10 +1110,10 @@ export default function CustomizePage() {
                   <div>
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Quantity</label>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                      <button onClick={() => setQuantity(q => Math.max(5, q - 1))}
                         className="w-9 h-9 border border-gray-200 text-[#111] font-bold text-lg flex items-center justify-center hover:bg-gray-50 transition select-none">−</button>
-                      <input type="number" min="1" max="100" value={quantity}
-                        onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                      <input type="number" min="5" max="100" value={quantity}
+                        onChange={(e) => setQuantity(Math.max(5, Math.min(100, parseInt(e.target.value) || 5)))}
                         className="w-16 px-2 py-2 border border-gray-200 text-sm text-center text-[#111] font-bold focus:outline-none focus:border-[#111]" />
                       <button onClick={() => setQuantity(q => Math.min(100, q + 1))}
                         className="w-9 h-9 border border-gray-200 text-[#111] font-bold text-lg flex items-center justify-center hover:bg-gray-50 transition select-none">+</button>

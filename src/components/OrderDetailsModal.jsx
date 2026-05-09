@@ -662,8 +662,8 @@ export default function OrderDetailsModal({
                 <div className="bg-white p-3 rounded border border-orange-200">
                   <h4 className="font-semibold text-gray-800 mb-2">📱 Upload QR Code for Payment</h4>
                   <div className="bg-orange-100 p-2 rounded border border-orange-200 mb-3 text-center">
-                    <p className="text-xs text-orange-800 uppercase font-bold tracking-wider">Downpayment Required (20%)</p>
-                    <p className="text-lg font-black text-orange-600">₱{(parseFloat(order.totalPrice || 0) * 0.20).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    <p className="text-xs text-orange-800 uppercase font-bold tracking-wider">Design Fee (Required)</p>
+                    <p className="text-lg font-black text-orange-600">₱{(order.depositAmount || 500).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
                   </div>
                   <p className="text-xs text-gray-600 mb-3">Upload a QR code image so customer can scan and pay</p>
                   

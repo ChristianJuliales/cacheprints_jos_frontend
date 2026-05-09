@@ -31,7 +31,7 @@ const FBIcon = () => (
 const FAQS = [
   {
     q: 'What is the minimum order quantity?',
-    a: 'Our minimum order starts at 6 pieces for Pro tier and 10 pieces for Starter tier. Elite orders have no minimum — perfect for sample orders or small squads.',
+    a: 'Our minimum order starts at 5 pieces for Elite tier, 6 pieces for Pro tier, and 10 pieces for Starter tier. This ensures quality production and covers our fixed design fee.',
   },
   {
     q: 'How long does production take?',
