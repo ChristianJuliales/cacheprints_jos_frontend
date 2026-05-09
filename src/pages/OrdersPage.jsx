@@ -296,6 +296,290 @@ function CancelModal({ order, onClose, onConfirm, loading }) {
   );
 }
 
+/* ── Proof of Delivery Modal (fullscreen image viewer) ── */
+function ProofModal({ imageUrl, orderType, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="relative max-w-2xl w-full" onClick={e => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-white/70 hover:text-white text-[0.8rem] font-semibold flex items-center gap-1.5 transition-colors"
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Close
+        </button>
+        <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
+          <div className="px-5 py-4 border-b border-[#f0ede8] flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
+              <svg width="13" height="13" fill="none" stroke="#16a34a" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[0.82rem] font-bold text-[#111]">
+                Proof of {orderType === 'pickup' ? 'Pickup' : 'Delivery'}
+              </p>
+              <p className="text-[0.68rem] text-gray-400">Uploaded by our team</p>
+            </div>
+          </div>
+          <img
+            src={imageUrl}
+            alt="Proof of delivery"
+            className="w-full object-contain max-h-[70vh]"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Star Rating ── */
+function StarRating({ value, onChange, readonly = false }) {
+  const [hovered, setHovered] = useState(0);
+  const labels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map(star => (
+          <button
+            key={star}
+            type="button"
+            disabled={readonly}
+            onClick={() => !readonly && onChange(star)}
+            onMouseEnter={() => !readonly && setHovered(star)}
+            onMouseLeave={() => !readonly && setHovered(0)}
+            className={`transition-transform ${!readonly ? 'hover:scale-110 cursor-pointer' : 'cursor-default'}`}
+          >
+            <svg
+              width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke={(hovered || value) >= star ? '#f59e0b' : '#e2ddd8'}
+              strokeWidth="1.5"
+            >
+              <path
+                fill={(hovered || value) >= star ? '#f59e0b' : 'none'}
+                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+              />
+            </svg>
+          </button>
+        ))}
+      </div>
+      {!readonly && (hovered || value) > 0 && (
+        <span className="text-[0.72rem] font-semibold text-amber-600">
+          {labels[hovered || value]}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/* ── Feedback Modal ── */
+function FeedbackModal({ order, onClose, onSubmit, loading }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const canSubmit = rating > 0 && !loading;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-[#f0ede8]">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <svg width="14" height="14" fill="#f59e0b" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="font-['Syne',serif] text-[1.15rem] font-extrabold text-[#111]">
+                Rate Your Order
+              </h2>
+              <p className="text-[0.72rem] text-gray-400">Your feedback helps us improve</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-5">
+          {/* Order ID */}
+          <div className="bg-[#f8f7f4] px-3 py-2 rounded-lg mb-5 flex items-center gap-2">
+            <svg width="12" height="12" fill="none" stroke="#999" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span className="font-mono text-[0.72rem] text-gray-500">Order #{order?.id?.substring(0, 12)}</span>
+          </div>
+
+          {/* Stars */}
+          <div className="mb-5 text-center">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-3">
+              Overall Rating <span className="text-red-400">*</span>
+            </p>
+            <StarRating value={rating} onChange={setRating} />
+          </div>
+
+          {/* Comment */}
+          <div className="mb-5">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">
+              Comments <span className="text-gray-300">(optional)</span>
+            </p>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value.slice(0, 500))}
+              placeholder="Tell us about your experience — quality, fit, communication..."
+              className="w-full p-3 border border-[#e8e5e0] rounded-xl text-[0.8rem] focus:outline-none focus:border-[#111] focus:ring-1 focus:ring-[#111] resize-none text-[#111] placeholder-gray-300"
+              rows="4"
+            />
+            <p className="text-[0.68rem] text-gray-300 text-right mt-0.5">{comment.length}/500</p>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-2.5">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 py-2.5 text-[0.82rem] font-bold text-[#111] bg-transparent border-[1.5px] border-[#ddd] rounded-xl hover:bg-[#f8f7f4] hover:border-[#bbb] transition-all disabled:opacity-50"
+            >
+              Maybe Later
+            </button>
+            <button
+              onClick={() => onSubmit({ rating, comment })}
+              disabled={!canSubmit}
+              className="flex-1 py-2.5 text-[0.82rem] font-bold text-white bg-[#111] rounded-xl hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Submitting...
+                </>
+              ) : 'Submit Review'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Proof of Delivery / Confirm Received section (sidebar) ── */
+function ProofOfDeliverySection({ order, onConfirmReceived, confirmLoading, onOpenProof, onLeaveFeedback }) {
+  const isPickup = order?.orderType === 'pickup';
+  const proofUrl = order?.proofOfDelivery || order?.deliveryProof || order?.proofImage;
+  const isConfirmed = order?.receivedConfirmed === true;
+  const hasFeedback = !!order?.review;
+
+  if (order?.status !== 'completed') return null;
+
+  return (
+    <div className="mb-4 pb-4 border-b border-[#f0ede8]">
+      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-2.5">
+        {isPickup ? 'Proof of Pickup' : 'Proof of Delivery'}
+      </p>
+
+      {proofUrl ? (
+        <>
+          {/* Proof image thumbnail */}
+          <button
+            onClick={() => onOpenProof(proofUrl)}
+            className="w-full rounded-xl overflow-hidden border border-[#e8e5e0] hover:border-[#bbb] transition-all group relative mb-3"
+          >
+            <img
+              src={proofUrl}
+              alt="Proof"
+              className="w-full h-36 object-cover group-hover:scale-[1.02] transition-transform duration-300"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full px-3 py-1.5 flex items-center gap-1.5">
+                <svg width="12" height="12" fill="none" stroke="#111" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                </svg>
+                <span className="text-[0.68rem] font-bold text-[#111]">View full image</span>
+              </div>
+            </div>
+          </button>
+
+          {/* Confirm received */}
+          {isConfirmed ? (
+            <div className="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5 mb-3">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                <svg width="10" height="10" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-[0.75rem] font-semibold text-green-700">
+                You confirmed receipt of this order
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={onConfirmReceived}
+              disabled={confirmLoading}
+              className="w-full py-2.5 mb-3 text-[0.82rem] font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {confirmLoading ? (
+                <>
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Confirming...
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Confirm {isPickup ? 'Pickup' : 'Receipt'}
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Review / feedback */}
+          {hasFeedback ? (
+            <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[0.68rem] font-semibold text-amber-700 uppercase tracking-wider">Your Review</p>
+                <StarRating value={order.review.rating} onChange={() => {}} readonly />
+              </div>
+              {order.review.comment && (
+                <p className="text-[0.75rem] text-amber-800 leading-relaxed mt-1">
+                  "{order.review.comment}"
+                </p>
+              )}
+            </div>
+          ) : isConfirmed ? (
+            <button
+              onClick={onLeaveFeedback}
+              className="w-full py-2.5 text-[0.82rem] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 hover:border-amber-300 transition-all flex items-center justify-center gap-2"
+            >
+              <svg width="13" height="13" fill="#f59e0b" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              Leave a Review
+            </button>
+          ) : (
+            <p className="text-[0.7rem] text-gray-300 text-center">
+              Confirm receipt first to leave a review
+            </p>
+          )}
+        </>
+      ) : (
+        /* No proof uploaded yet */
+        <div className="flex items-center gap-2.5 bg-[#f8f7f4] border border-[#e8e5e0] rounded-xl px-3 py-3">
+          <div className="w-8 h-8 rounded-full bg-[#ede9e3] flex items-center justify-center flex-shrink-0">
+            <svg width="14" height="14" fill="none" stroke="#bbb" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-[0.75rem] font-semibold text-[#555]">Awaiting proof upload</p>
+            <p className="text-[0.67rem] text-gray-400 mt-0.5">
+              Our team will upload the {isPickup ? 'pickup' : 'delivery'} proof shortly
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Main Page ── */
 export default function OrdersPage() {
   const { user } = useAuthStore();
@@ -306,6 +590,11 @@ export default function OrdersPage() {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [showProofModal, setShowProofModal] = useState(false);
+  const [proofModalUrl, setProofModalUrl] = useState('');
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const { openChat } = useChatStore();
 
   useEffect(() => {
@@ -320,6 +609,10 @@ export default function OrdersPage() {
       const response = await apiClient.get('/jos/my-orders');
       const mappedOrders = response.data.map(o => ({ ...o, id: o._id }));
       setOrders(mappedOrders);
+      // Keep selected order in sync
+      setSelectedOrder(prev =>
+        prev ? mappedOrders.find(o => o.id === prev.id) || prev : null
+      );
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -367,6 +660,44 @@ export default function OrdersPage() {
     if (order.status === 'pending-payment') {
       setShowPaymentModal(true);
     }
+  };
+
+  /* ── Confirm received ── */
+  const handleConfirmReceived = async () => {
+    if (!selectedOrder) return;
+    setConfirmLoading(true);
+    try {
+      await apiClient.put(`/jos/orders/${selectedOrder.id}/confirm-received`);
+      toast.success('Thank you! Receipt confirmed.');
+      fetchUserOrders();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Failed to confirm receipt');
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  /* ── Submit review ── */
+  const handleSubmitFeedback = async ({ rating, comment }) => {
+    if (!selectedOrder) return;
+    setFeedbackLoading(true);
+    try {
+      await apiClient.post(`/jos/orders/${selectedOrder.id}/review`, { rating, comment });
+      toast.success('Review submitted! Thank you 🎉');
+      setShowFeedbackModal(false);
+      fetchUserOrders();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Failed to submit review');
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
+  const openProofModal = (url) => {
+    setProofModalUrl(url);
+    setShowProofModal(true);
   };
 
   return (
@@ -428,6 +759,15 @@ export default function OrdersPage() {
                         <span className={`text-[0.68rem] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${cfg.pill}`}>
                           {order.status === 'for-shipping' && order.orderType === 'pickup' ? 'Ready for Pickup' : cfg.label}
                         </span>
+                        {/* Reviewed badge */}
+                        {order.review && (
+                          <span className="text-[0.62rem] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                            <svg width="9" height="9" fill="#f59e0b" viewBox="0 0 24 24">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            Reviewed
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -484,22 +824,50 @@ export default function OrdersPage() {
                           Cancel order
                         </button>
                       ) : (
-                        <div /> /* spacer */
+                        <div className="flex items-center gap-3">
+                          {/* Confirm received chip on card */}
+                          {order.status === 'completed' && !order.receivedConfirmed && (order.proofOfDelivery || order.deliveryProof || order.proofImage) && (
+                            <span className="text-[0.68rem] font-semibold text-green-600 flex items-center gap-1 animate-pulse">
+                              <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              Confirm receipt →
+                            </span>
+                          )}
+                        </div>
                       )}
 
-                      {/* Receipt link — right side */}
-                      {canViewReceipt(order.status) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedOrder(order);
-                            setShowReceiptModal(true);
-                          }}
-                          className="text-[0.72rem] font-semibold text-[#111] border-b border-[#111] pb-px hover:opacity-50 transition-opacity"
-                        >
-                          View Receipt
-                        </button>
-                      )}
+                      <div className="flex items-center gap-3">
+                        {/* Receipt link */}
+                        {canViewReceipt(order.status) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOrder(order);
+                              setShowReceiptModal(true);
+                            }}
+                            className="text-[0.72rem] font-semibold text-[#111] border-b border-[#111] pb-px hover:opacity-50 transition-opacity"
+                          >
+                            View Receipt
+                          </button>
+                        )}
+                        {/* Leave review chip on card */}
+                        {order.status === 'completed' && order.receivedConfirmed && !order.review && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOrder(order);
+                              setShowFeedbackModal(true);
+                            }}
+                            className="text-[0.72rem] font-semibold text-amber-600 border-b border-amber-400 pb-px hover:opacity-60 transition-opacity flex items-center gap-1"
+                          >
+                            <svg width="10" height="10" fill="#f59e0b" viewBox="0 0 24 24">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            Leave review
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -545,6 +913,15 @@ export default function OrdersPage() {
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-1">Progress</p>
                     <SidebarTracker currentStep={getStep(selectedOrder.status)} order={selectedOrder} />
                   </div>
+
+                  {/* ── Proof of Delivery / Confirm Received ── */}
+                  <ProofOfDeliverySection
+                    order={selectedOrder}
+                    onConfirmReceived={handleConfirmReceived}
+                    confirmLoading={confirmLoading}
+                    onOpenProof={openProofModal}
+                    onLeaveFeedback={() => setShowFeedbackModal(true)}
+                  />
 
                   {selectedOrder.customizationDetails && (
                     <div className="mb-4 pb-4 border-b border-[#f0ede8]">
@@ -659,6 +1036,25 @@ export default function OrdersPage() {
             loading={cancelLoading}
             onClose={() => setShowCancelModal(false)}
             onConfirm={handleConfirmCancel}
+          />
+        )}
+
+        {/* Proof of Delivery Fullscreen Modal */}
+        {showProofModal && (
+          <ProofModal
+            imageUrl={proofModalUrl}
+            orderType={selectedOrder?.orderType}
+            onClose={() => setShowProofModal(false)}
+          />
+        )}
+
+        {/* Feedback / Review Modal */}
+        {showFeedbackModal && (
+          <FeedbackModal
+            order={selectedOrder}
+            loading={feedbackLoading}
+            onClose={() => setShowFeedbackModal(false)}
+            onSubmit={handleSubmitFeedback}
           />
         )}
       </div>
