@@ -84,9 +84,9 @@ const ITEMS_PER_PAGE = 4;
 
 // ── Category section definitions (no hardcoded items) ────────────────────────
 const CATEGORY_SECTIONS = [
-  { title: 'Custom Sportswear', label: 'Performance Uniforms' },
-  { title: 'Custom Apparel',    label: 'Everyday Wear'        },
-  { title: 'Excluded / Add-Ons', label: 'Billed Separately'  },
+  { title: 'Custom Sportswear', label: 'Performance Uniforms',  allowCustomize: true  },
+  { title: 'Custom Apparel',    label: 'Everyday Wear',         allowCustomize: true  },
+  { title: 'Excluded / Add-Ons', label: 'Billed Separately',   allowCustomize: false },
 ];
 
 export default function StorePage() {
@@ -104,7 +104,6 @@ export default function StorePage() {
     try {
       setLoading(true);
       const response = await apiClient.get('/jos/products');
-      // Map _id to id for frontend compatibility
       const mappedProducts = response.data.map(p => ({ ...p, id: p._id }));
       setProducts(mappedProducts);
     } catch (error) {
@@ -321,7 +320,9 @@ export default function StorePage() {
                             : <span className="italic font-normal text-[0.75rem] text-gray-500">Price TBA</span>
                           }
                         </div>
-                        {!isAdmin && (
+
+                        {/* Only show Customize/Cart buttons if category allows it and user is not admin */}
+                        {!isAdmin && cat.allowCustomize && (
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleCustomize(product)}
@@ -343,6 +344,17 @@ export default function StorePage() {
                             >
                               <CartIcon />
                             </button>
+                          </div>
+                        )}
+
+                        {/* Add-Ons: show a non-clickable note instead */}
+                        {!isAdmin && !cat.allowCustomize && (
+                          <div className={`text-[0.68rem] font-semibold uppercase tracking-wider px-3 py-2 rounded border ${
+                            dark
+                              ? 'text-gray-500 border-white/10 bg-white/5'
+                              : 'text-gray-400 border-gray-200 bg-gray-50'
+                          }`}>
+                            Billed separately
                           </div>
                         )}
                       </div>
