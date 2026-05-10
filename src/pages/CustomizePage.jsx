@@ -900,6 +900,84 @@ export default function CustomizePage() {
     }
   };
 
+  const handleAutoGenerateOrder = async () => {
+    if (products.length === 0 || fabricOptions.length === 0) {
+      toast.error('Products or fabrics not loaded yet');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const loadingToast = toast.loading('Generating test order...');
+
+    try {
+      // Pick random product and fabric
+      const randomProduct = products[Math.floor(Math.random() * products.length)];
+      const randomFabric = fabricOptions[Math.floor(Math.random() * fabricOptions.length)];
+      
+      const testQuantity = 12;
+      const testLineup = Array.from({ length: testQuantity }, (_, i) => ({
+        id: `test-player-${Date.now()}-${i}`,
+        surname: `TEST PLAYER ${i + 1}`,
+        jerseyNumber: `${Math.floor(Math.random() * 99)}`,
+        size: SIZES[Math.floor(Math.random() * SIZES.length)],
+        addOn: null,
+      }));
+
+      const testPrimary = '#111111';
+      const testAccent = '#FFD700';
+      const cmykRatio = computeAverageCmyk([testPrimary, testAccent, '#ffffff', '#ffffff', '#ffffff']);
+      const calculatedTotal = parseFloat(randomProduct.price) * testQuantity;
+
+      const response = await apiClient.post('/jos/orders', {
+        userId: user.id,
+        customerName: user.name || user.email,
+        customerEmail: user.email,
+        phoneNumber: '09123456789',
+        orderType: 'pickup',
+        shippingAddress: null,
+        items: [{
+          productId: randomProduct.id,
+          productName: randomProduct.name,
+          quantity: testQuantity,
+          price: randomProduct.price
+        }],
+        customizationDetails: {
+          apparelType: randomProduct.name,
+          apparelCategory: randomProduct.category,
+          primaryColor: testPrimary,
+          accentColor: testAccent,
+          color1: '#ffffff',
+          color2: '#ffffff',
+          color3: '#ffffff',
+          cmyk: cmykRatio,
+          fabricType: randomFabric.id,
+          fabricName: randomFabric.name,
+          customText: 'TEST TEAM',
+          jerseyNumber: '00',
+          fontFamily: 'INDUSTRIAL SANS',
+          jerseyLayoutComments: 'Auto-generated test order',
+          logoImage: null, // As requested: logo is null
+          lineup: testLineup,
+          productPrice: randomProduct.price,
+        },
+        totalPrice: calculatedTotal,
+        depositAmount: depositAmount,
+        depositPaid: false,
+        status: 'pending',
+      });
+
+      const newOrderId = response.data?.id || response.data?.orderId || `ORD-${Date.now()}`;
+      setPlacedOrderId(newOrderId);
+      setOrderPlaced(true);
+      toast.success(`Test order placed successfully!`, { id: loadingToast });
+    } catch (error) {
+      console.error('Auto-generate error:', error);
+      toast.error('Failed to auto-generate order: ' + (error.response?.data?.message || error.message), { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading) return (
     <div className="flex justify-center items-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-200 border-t-[#111]" />
@@ -1067,8 +1145,20 @@ export default function CustomizePage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h1 className="text-3xl font-black text-[#111] uppercase mb-1">Design Studio</h1>
-        <p className="text-xs text-gray-400 uppercase tracking-widest mb-6">Configure your custom apparel specifications</p>
+        <div className="flex justify-between items-end mb-6">
+          <div>
+            <h1 className="text-3xl font-black text-[#111] uppercase mb-1">Design Studio</h1>
+            <p className="text-xs text-gray-400 uppercase tracking-widest">Configure your custom apparel specifications</p>
+          </div>
+          <button 
+            onClick={handleAutoGenerateOrder}
+            disabled={isSubmitting}
+            className="group flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#111] text-[#111] text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#111] hover:text-white transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+          >
+            <span className="group-hover:rotate-12 transition-transform">⚡</span>
+            {isSubmitting ? 'Generating...' : 'Auto-Generate Order'}
+          </button>
+        </div>
 
         <StepIndicator currentStep={currentStep} completedSteps={completedSteps} />
 
